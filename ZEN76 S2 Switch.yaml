@@ -1,0 +1,163 @@
+blueprint:
+  name: Zooz ZEN76 Scene Control
+  description: >
+    Scene control for the 
+    Zooz ZEN76 S2 700-series switch
+    using the Zwave JS integration.
+  domain: automation
+
+  input:
+    zooz_source:
+      name: Source
+      description: The device to add automation triggers to
+      selector:
+        device:
+          integration: zwave_js
+          manufacturer: Zooz
+          model: ZEN76
+          multiple: false
+
+    button_1_1x:
+      name: Paddle Up press 1x
+      description: |
+        Action to run when the button is pressed one time.
+        Default: Turn on switch load.
+      default: []
+      selector:
+        action: {}
+    button_1_2x:
+      name: Paddle Up press 2x
+      description: Action to run when the button is pressed two times.
+      default: []
+      selector:
+        action: {}
+    button_1_3x:
+      name: Paddle Up press 3x
+      description: |
+        Action to run when the button is pressed three times.
+        Default: Enter inclusion/pairing mode.
+      default: []
+      selector:
+        action: {}
+    button_1_4x:
+      name: Paddle Up press 4x
+      description: Action to runwhen the button is pressed four times.
+      default: []
+      selector:
+        action: {}
+    button_1_5x:
+      name: Paddle Up press 5x
+      description: Action to run on when the button is pressed five times.
+      default: []
+      selector:
+        action: {}
+    button_1_hold:
+      name: Paddle Up Hold
+      description: Action to run when the button is held.
+      default: []
+      selector:
+        action: {}
+    button_1_release:
+      name: Paddle Up Release
+      description: Action to run when the button is released.
+      default: []
+      selector:
+        action: {}
+
+    button_2_1x:
+      name: Paddle Down press 1x
+      description: |
+        Action to run when the button is pressed one time.
+        Default: Turn off dimmer switch load.
+      default: []
+      selector:
+        action: {}
+    button_2_2x:
+      name: Paddle Down press 2x
+      description: Action to run when the button is pressed two times.
+      default: []
+      selector:
+        action: {}
+    button_2_3x:
+      name: Paddle Down press 3x
+      description: |
+        Action to run when the button is pressed three times.
+        Default: Enter exclusion/un-pairing mode.
+      default: []
+      selector:
+        action: {}
+    button_2_4x:
+      name: Paddle Down press 4x
+      description: Action to runwhen the button is pressed four times.
+      default: []
+      selector:
+        action: {}
+    button_2_5x:
+      name: Paddle Down press 5x
+      description: Action to run on when the button is pressed five times.
+      default: []
+      selector:
+        action: {}
+    button_2_hold:
+      name: Paddle Down Hold
+      description: Action to run when the button is held.
+      default: []
+      selector:
+        action: {}
+    button_2_release:
+      name: Paddle Down Release
+      description: Action to run when the button is released.
+      default: []
+      selector:
+        action: {}
+
+mode: single
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zwave_js_value_notification
+    event_data:
+      command_class_name: Central Scene
+      device_id: !input zooz_source
+
+action:
+  - variables:
+      #button_id: '{{ trigger.event.data.property_key_name }}'
+      scene_id: "{{ trigger.event.data.label }}"
+      event_action: "{{ trigger.event.data.value }}"
+  - choose:
+      - conditions: "{{ scene_id == 'Scene 001' }}"
+        sequence:
+          - choose:
+              - conditions: "{{ event_action == 'KeyPressed' }}"
+                sequence: !input button_1_1x
+              - conditions: "{{ event_action == 'KeyPressed2x' }}"
+                sequence: !input button_1_2x
+              - conditions: "{{ event_action == 'KeyPressed3x' }}"
+                sequence: !input button_1_3x
+              - conditions: "{{ event_action == 'KeyPressed4x' }}"
+                sequence: !input button_1_4x
+              - conditions: "{{ event_action == 'KeyPressed5x' }}"
+                sequence: !input button_1_5x
+              - conditions: "{{ event_action == 'KeyHeldDown' }}"
+                sequence: !input button_1_hold
+              - conditions: "{{ event_action == 'KeyReleased' }}"
+                sequence: !input button_1_release
+      - conditions: "{{ scene_id == 'Scene 002' }}"
+        sequence: 
+          - choose:
+              - conditions: "{{ event_action == 'KeyPressed' }}"
+                sequence: !input button_2_1x
+              - conditions: "{{ event_action == 'KeyPressed2x' }}"
+                sequence: !input button_2_2x
+              - conditions: "{{ event_action == 'KeyPressed3x' }}"
+                sequence: !input button_2_3x
+              - conditions: "{{ event_action == 'KeyPressed4x' }}"
+                sequence: !input button_2_4x
+              - conditions: "{{ event_action == 'KeyPressed5x' }}"
+                sequence: !input button_2_5x
+              - conditions: "{{ event_action == 'KeyHeldDown' }}"
+                sequence: !input button_2_hold
+              - conditions: "{{ event_action == 'KeyReleased' }}"
+                sequence: !input button_2_release
