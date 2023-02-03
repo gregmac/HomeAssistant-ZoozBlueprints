@@ -7,7 +7,7 @@ blueprint:
   domain: automation
 
   input:
-    zooz_source:
+    device_id:
       name: Source
       description: |
         The device to add automation triggers to.
@@ -160,7 +160,7 @@ trigger:
     event_type: zwave_js_value_notification
     event_data:
       command_class_name: Central Scene
-      device_id: !input zooz_source
+      device_id: !input device_id
 
   # used for initialization
   - platform: event
@@ -182,7 +182,7 @@ action:
             parameter: 16
             value: 1
           target: 
-            device_id: !input zooz_source
+            device_id: !input device_id
         # setup local control
         - if:
           - condition: template
@@ -193,7 +193,7 @@ action:
               parameter: 17
               value: !input local_control_1
             target: 
-              device_id: !input zooz_source
+              device_id: !input device_id
         - if:
           - condition: template
             value_template: "{{ '!input local_control_2' != 'undefined' }}"
@@ -203,7 +203,7 @@ action:
               parameter: 18
               value: !input local_control_2
             target: 
-              device_id: !input zooz_source
+              device_id: !input device_id
 
       - conditions: "{{ scene_id == 'Scene 001' }}"
         sequence:
