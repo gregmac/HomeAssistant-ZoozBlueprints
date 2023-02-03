@@ -9,13 +9,44 @@ blueprint:
   input:
     zooz_source:
       name: Source
-      description: The device to add automation triggers to
+      description: |
+        The device to add automation triggers to.
+        Note that the "Scene Control" parameter will be enabled on this device (triggered by it coming online).
       selector:
         device:
           integration: zwave_js
           manufacturer: Zooz
           model: ZEN52
           multiple: false
+
+    local_control_1:
+      name: "Configuration: Relay 1 Local phyiscal control"
+      description: Enable or disable connected switch controlling relay on/off.
+      default: 'undefined'
+      selector: 
+        select:
+          mode: dropdown
+          options:
+            - label: Do not modify configuration
+              value: 'undefined'
+            - label: Physical switch/button control enabled (device default)
+              value: '1'
+            - label: Physical switch/button control disabled (control via Z-Wave only)
+              value: '0'
+    local_control_2:
+      name: "Configuration: Relay 2 Local phyiscal control"
+      description: Enable or disable connected switch controlling relay on/off.
+      default: 'undefined'
+      selector: 
+        select:
+          mode: dropdown
+          options:
+            - label: Do not modify configuration
+              value: 'undefined'
+            - label: Physical switch/button control enabled (device default)
+              value: '1'
+            - label: Physical switch/button control disabled (control via Z-Wave only)
+              value: '0'
 
     button_1_1x:
       name: Input S1 press 1x
@@ -131,12 +162,49 @@ trigger:
       command_class_name: Central Scene
       device_id: !input zooz_source
 
+  # used for initialization
+  - platform: event
+    event_type: automation_reloaded
+
 action:
   - variables:
       #button_id: '{{ trigger.event.data.property_key_name }}'
       scene_id: "{{ trigger.event.data.label }}"
       event_action: "{{ trigger.event.data.value }}"
   - choose:
+      # initialize
+      # docs: https://www.support.getzooz.com/kb/article/805-zen52-double-relay-advanced-settings/
+      - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+        sequence:
+        # enable scene control
+        - service: zwave_js.set_config_parameter
+          data:
+            parameter: 16
+            value: 1
+          target: 
+            device_id: !input zooz_source
+        # setup local control
+        - if:
+          - condition: template
+            value_template: "{{ '!input local_control_1' != 'undefined' }}"
+          then:
+          - service: zwave_js.set_config_parameter
+            data:
+              parameter: 17
+              value: !input local_control_1
+            target: 
+              device_id: !input zooz_source
+        - if:
+          - condition: template
+            value_template: "{{ '!input local_control_2' != 'undefined' }}"
+          then:
+          - service: zwave_js.set_config_parameter
+            data:
+              parameter: 18
+              value: !input local_control_2
+            target: 
+              device_id: !input zooz_source
+
       - conditions: "{{ scene_id == 'Scene 001' }}"
         sequence:
           - choose:

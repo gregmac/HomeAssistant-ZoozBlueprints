@@ -9,13 +9,30 @@ blueprint:
   input:
     zooz_source:
       name: Source
-      description: The device to add automation triggers to
+      description: |
+        The device to add automation triggers to.
+        Note that the "Scene Control" parameter will be enabled on this device (triggered by it coming online).
       selector:
         device:
           integration: zwave_js
           manufacturer: Zooz
           model: ZEN76
           multiple: false
+
+    local_control:
+      name: "Configuration: Local phyiscal control"
+      description: Enable or disable physical paddle on/off control (also known as "Smart Bulb Mode").
+      default: 'undefined'
+      selector: 
+        select:
+          mode: dropdown
+          options:
+            - label: Do not modify configuration
+              value: 'undefined'
+            - label: Physical paddle control enabled (device default)
+              value: '1'
+            - label: Physical paddle control disabled (control via Z-Wave only)
+              value: '0'
 
     button_1_1x:
       name: Paddle Up press 1x
@@ -121,12 +138,39 @@ trigger:
       command_class_name: Central Scene
       device_id: !input zooz_source
 
+  # used for initialization
+  - platform: event
+    event_type: automation_reloaded
+
 action:
   - variables:
       #button_id: '{{ trigger.event.data.property_key_name }}'
       scene_id: "{{ trigger.event.data.label }}"
       event_action: "{{ trigger.event.data.value }}"
   - choose:
+      # initialize
+      # docs: https://www.support.getzooz.com/kb/article/549-zen76-s2-on-off-switch-700-advanced-settings/
+      - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+        sequence:
+        # enable scene control
+        - service: zwave_js.set_config_parameter
+          data:
+            parameter: 10
+            value: 1
+          target: 
+            device_id: !input zooz_source
+        # setup local control
+        - if:
+          - condition: template
+            value_template: "{{ '!input local_control' != 'undefined' }}"
+          then:
+          - service: zwave_js.set_config_parameter
+            data:
+              parameter: 12
+              value: !input local_control
+            target: 
+              device_id: !input zooz_source
+
       - conditions: "{{ scene_id == 'Scene 001' }}"
         sequence:
           - choose:
