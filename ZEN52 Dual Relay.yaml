@@ -138,20 +138,6 @@ blueprint:
       selector:
         action: {}
 
-    relay_1_on:
-      name: Output 1 turned on
-      description: Action to run when the output is turned on
-      default: []
-      selector:
-        action: {}
-
-    relay_1_off:
-      name: Output 1 turned on
-      description: Action to run when the output is turned on
-      default: []
-      selector:
-        action: {}
-
 mode: single
 max_exceeded: silent
 

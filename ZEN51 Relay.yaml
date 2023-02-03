@@ -79,11 +79,53 @@ blueprint:
       selector:
         action: {}
 
+    button_2_1x:
+      name: Input S2 press 1x
+      description: |
+        Action to run when the button is pressed one time.
+        Default: Turn off Relay2 switch load.
+      default: []
+      selector:
+        action: {}
+    button_2_2x:
+      name: Input S2 press 2x
+      description: Action to run when the button is pressed two times.
+      default: []
+      selector:
+        action: {}
+    button_2_3x:
+      name: Input S2 press 3x
+      description: Action to run when the button is pressed three times.
+      default: []
+      selector:
+        action: {}
+    button_2_4x:
+      name: Input S2 press 4x
+      description: Action to runwhen the button is pressed four times.
+      default: []
+      selector:
+        action: {}
+    button_2_5x:
+      name: Input S2 press 5x
+      description: Action to run on when the button is pressed five times.
+      default: []
+      selector:
+        action: {}
+    button_2_hold:
+      name: Input S2 Hold
+      description: Action to run when the button is held.
+      default: []
+      selector:
+        action: {}
+    button_2_release:
+      name: Bottom Paddle Release
+      description: Action to run when the button is released.
+      default: []
+      selector:
+        action: {}
+
 mode: single
 max_exceeded: silent
-
-variables:
-  device_id: !input zooz-switch
 
 trigger:
   - platform: event
