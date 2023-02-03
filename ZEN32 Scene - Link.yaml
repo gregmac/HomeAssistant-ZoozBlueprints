@@ -1,0 +1,193 @@
+blueprint:
+  name: Zooz ZEN32 Scene Controller - Button to Light link
+  # based on https://community.home-assistant.io/t/control-a-light-with-a-button-on-a-zooz-zen32-scene-controller/427705
+  # and https://community.home-assistant.io/t/set-the-indicator-light-on-a-zooz-zen32-scene-controller-button-to-match-the-state-of-a-light/427707
+  description: <
+    Button control for the Zooz ZEN32 Scene Controller using 
+    Connects a ZEN32 button to a light using the Zwave JS integration.
+    Press button to toggle the light, double-tap to set to max brightness, hold to set night-light mode.
+    The ZEN32 button LED is kept up to date with the light's current status, regardless of what controls it.
+  domain: automation
+  input:
+    device_id:
+      name: Zooz Switch
+      description: List of available Zooz ZEN32 switches.
+      selector:
+        device:
+          integration: zwave_js
+          manufacturer: Zooz
+          model: ZEN32
+    scene_button:
+      name: Scene Button
+      description: The button to link to light
+      default: '001'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: Scene 5 (Big Button)
+              value: '005'
+            - label: Scene 1 (Top Left)
+              value: '001'
+            - label: Scene 2 (Top Right)
+              value: '002'
+            - label: Scene 3 (Bottom Left)
+              value: '003'
+            - label: Scene 4 (Bottom Right)
+              value: '004'
+
+    target_light:
+      name: Light
+      description: The light to link to button
+      selector:
+        target:
+          entity: {}
+            #domain: light
+
+    night_light_brightness:
+      name: Night Light Brightness
+      description: Brightness to set lights to when button is held (default 20%)
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+
+    off_color:
+      name: Off Color
+      description: Color to make indicator when light is off (default white)
+      default: '0'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+    dimmed_color:
+      name: Dimmed Color
+      description: Color to make indicator when light is dimmed (default blue)
+      default: '1'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+mode: single
+max_exceeded: silent
+
+variables:
+  # minimum value to consider light as "full" brightness
+  full_brightness: 250
+
+  # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  led_always_off: 2
+  led_always_on: 3
+
+trigger:
+  # controller trigger (set light)
+  - platform: event
+    event_type: zwave_js_value_notification
+    event_data:
+      command_class_name: Central Scene
+      device_id: !input device_id
+
+  - platform: state
+    entity_id: !input target_light
+action:
+  - variables:
+      scene_button: !input scene_button
+      device_id: !input device_id
+
+      # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+      led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
+      led_indicator_color_param: "{{ ((scene_button | int) % 5) + 6 }}" # '005' => 6, '001' => 7, '002' => 8, '003' => 9, '004' => 10
+
+  - choose:
+      # controller
+      - alias: Controller button pressed
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button }}"
+        sequence: 
+          - choose:
+              - alias: Controller button single press
+                conditions: "{{ trigger.event.data.value == 'KeyPressed' }}"
+                sequence:
+                  - service: light.toggle
+                    data: {}
+                    target: !input target_light
+              - alias: Controller button double press
+                conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      brightness_pct: 100
+                    target: !input target_light
+              - alias: Controller button held
+                conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      brightness_pct: !input night_light_brightness
+                    target: !input target_light
+
+      # light changed
+      - alias: Light turned on/changed to full brightness
+        conditions: "{{ trigger.entity_id == '!input target_light' and trigger.to_state.state == 'on' and trigger.to_state.brightness >= full_brightness }}"
+        sequence: 
+          - alias: Turn off ZEN32 indicator LED
+            service: zwave_js.set_config_parameter 
+            data:
+              parameter: "{{ led_indicator_mode_param }}"
+              value: "{{ led_always_off }}"
+            target: 
+              device_id: !input device_id
+      - alias: Light turned on/changed to less than full brightness
+        conditions: "{{ trigger.entity_id == '!input target_light' and trigger.to_state.state == 'on' }}"
+        sequence:
+          - parallel: 
+              - alias: Set ZEN32 indicator LED color
+                service: zwave_js.set_config_parameter 
+                data:
+                  parameter: "{{ led_indicator_color_param }}"
+                  value: !input dimmed_color
+                target: 
+                  device_id: !input device_id
+              - alias: Turn on ZEN32 indicator LED
+                service: zwave_js.set_config_parameter 
+                data:
+                  parameter: "{{ led_indicator_mode_param }}"
+                  value: "{{ led_always_on }}"
+                target: 
+                  device_id: !input device_id
+      - alias: Light turned off
+        conditions: "{{ trigger.entity_id == '!input target_light' and trigger.to_state.state == 'off' }}"
+        sequence:
+          - parallel: 
+              - alias: Set ZEN32 indicator LED color
+                service: zwave_js.set_config_parameter 
+                data:
+                  parameter: "{{ led_indicator_color_param }}"
+                  value: !input off_color
+                target: 
+                  device_id: !input device_id
+              - alias: Turn on ZEN32 indicator LED
+                service: zwave_js.set_config_parameter 
+                data:
+                  parameter: "{{ led_indicator_mode_param }}"
+                  value: "{{ led_always_on }}"
+                target: 
+                  device_id: !input device_id
