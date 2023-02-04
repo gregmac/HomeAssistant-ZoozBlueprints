@@ -40,9 +40,8 @@ blueprint:
       name: Light
       description: The light to link to button
       selector:
-        target:
-          entity: {}
-            #domain: light
+        entity:
+          domain: light
 
     night_light_brightness:
       name: Night Light Brightness
@@ -97,7 +96,7 @@ variables:
   # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
   led_always_off: 2
   led_always_on: 3
-
+  
 trigger:
   # controller trigger (set light)
   - platform: event
@@ -112,6 +111,7 @@ action:
   - variables:
       scene_button: !input scene_button
       device_id: !input device_id
+      target_light: !input target_light
 
       # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
       led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
@@ -128,25 +128,28 @@ action:
                 sequence:
                   - service: light.toggle
                     data: {}
-                    target: !input target_light
+                    target: 
+                      entity_id: !input target_light
               - alias: Controller button double press
                 conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}"
                 sequence:
                   - service: light.turn_on
                     data:
                       brightness_pct: 100
-                    target: !input target_light
+                    target: 
+                      entity_id: !input target_light
               - alias: Controller button held
                 conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}"
                 sequence:
                   - service: light.turn_on
                     data:
                       brightness_pct: !input night_light_brightness
-                    target: !input target_light
+                    target: 
+                      entity_id: !input target_light
 
       # light changed
       - alias: Light turned on/changed to full brightness
-        conditions: "{{ trigger.entity_id == '!input target_light' and trigger.to_state.state == 'on' and trigger.to_state.brightness >= full_brightness }}"
+        conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'on' and trigger.to_state.brightness >= full_brightness }}"
         sequence: 
           - alias: Turn off ZEN32 indicator LED
             service: zwave_js.set_config_parameter 
@@ -156,7 +159,7 @@ action:
             target: 
               device_id: !input device_id
       - alias: Light turned on/changed to less than full brightness
-        conditions: "{{ trigger.entity_id == '!input target_light' and trigger.to_state.state == 'on' }}"
+        conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'on' }}"
         sequence:
           - parallel: 
               - alias: Set ZEN32 indicator LED color
@@ -174,7 +177,7 @@ action:
                 target: 
                   device_id: !input device_id
       - alias: Light turned off
-        conditions: "{{ trigger.entity_id == '!input target_light' and trigger.to_state.state == 'off' }}"
+        conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'off' }}"
         sequence:
           - parallel: 
               - alias: Set ZEN32 indicator LED color
