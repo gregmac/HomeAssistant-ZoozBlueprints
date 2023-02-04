@@ -86,6 +86,21 @@ blueprint:
             - label: Red
               value: '3'
 
+    local_control:
+      name: "Configuration: Local phyiscal control"
+      description: Enable or disable physical paddle on/off control (also known as "Smart Bulb Mode").
+      default: 'undefined'
+      selector: 
+        select:
+          mode: dropdown
+          options:
+            - label: Do not modify configuration
+              value: 'undefined'
+            - label: Physical control (big button) enabled (device default)
+              value: '1'
+            - label: Physical control (big button) disabled (control via Z-Wave only)
+              value: '0'
+
 mode: restart
 max_exceeded: silent
 
@@ -105,19 +120,42 @@ trigger:
       command_class_name: Central Scene
       device_id: !input device_id
 
+  # light state changed
   - platform: state
     entity_id: !input target_light
+
+  # used for initialization
+  - platform: event
+    event_type: automation_reloaded
+
 action:
   - variables:
       scene_button: !input scene_button
       device_id: !input device_id
       target_light: !input target_light
+      local_control: !input local_control
 
       # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
       led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
       led_indicator_color_param: "{{ ((scene_button | int) % 5) + 6 }}" # '005' => 6, '001' => 7, '002' => 8, '003' => 9, '004' => 10
 
   - choose:
+      # initialize
+      # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+      - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+        sequence:
+        # setup local control
+        - if:
+          - condition: template
+            value_template: "{{ local_control != 'undefined' }}"
+          then:
+          - service: zwave_js.set_config_parameter
+            data:
+              parameter: 19
+              value: !input local_control
+            target: 
+              device_id: !input device_id
+
       # controller
       - alias: Controller button pressed
         conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button }}"
