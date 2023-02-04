@@ -1,5 +1,5 @@
 blueprint:
-  name: Zooz ZEN32 Scene Control
+  name: "Zooz ZEN32 Scene Controller: Scene Control"
   description: <
     Scene control for the 
     Zooz ZEN32 Scene Controller

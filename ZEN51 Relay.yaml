@@ -1,5 +1,5 @@
 blueprint:
-  name: Zooz ZEN51 Scene Control
+  name: "Zooz ZEN51 Relay: Scene Control"
   description: |
     Scene control for the 
     Zooz ZEN51 Relay 

@@ -1,5 +1,5 @@
 blueprint:
-  name: Zooz ZEN76 Scene Control
+  name: "Zooz ZEN76 S2 Switch: Scene Control"
   description: >
     Scene control for the 
     Zooz ZEN76 S2 700-series switch
