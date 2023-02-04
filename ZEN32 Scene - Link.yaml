@@ -87,7 +87,7 @@ blueprint:
             - label: Red
               value: '3'
 
-mode: single
+mode: restart
 max_exceeded: silent
 
 variables:
