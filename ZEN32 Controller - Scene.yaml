@@ -136,6 +136,17 @@ action:
       led_indicator_color_param: "{{ ((scene_button | int) % 5) + 6 }}" # '005' => 6, '001' => 7, '002' => 8, '003' => 9, '004' => 10
 
   - choose:
+      # initialize
+      # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+      - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+        sequence:
+          - service: zwave_js.set_config_parameter
+            data:
+              parameter: 23                     # Enable / disable LED indicator for settings
+              value: 1                          # LED indicators don't flash if a setting is changed.
+            target: 
+              device_id: !input device_id
+
       # controller
       - alias: Controller button pressed
         conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button }}"
