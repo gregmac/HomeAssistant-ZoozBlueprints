@@ -9,6 +9,18 @@ blueprint:
     Press button **once** to toggle the light, **double-tap** to set to max brightness,
     **hold** to set night-light mode. The ZEN32 button LED is kept up to date with the
     light's current status, regardless of what controls it.
+
+
+    This can also be used to change the button used to control the local load:
+
+    1. Set **Scene Button** to the desired button (other than 5)
+
+    2. Set **Target** to the `switch` or `light` entity controlled by the switch
+
+    3. Set **Local Physical Control** to *Disabled*
+
+    4. Set **Relay LED (big button) indicator mode** to *Always off*
+
   domain: automation
   input:
     device_id:
@@ -91,10 +103,13 @@ blueprint:
               value: '3'
 
     local_control:
-      name: "Configuration: Local phyiscal control"
+      name: "Configuration: Local phyiscal control (Scene 5, big button)"
       description: |
-        Enable or disable physical paddle on/off control (also known as "Smart Bulb Mode").
-        If 
+        Enable or disable physical local on/off control (also known as "Smart Bulb Mode")
+        using the big button (Scene 5).
+
+
+        If reassigning the local load to another button, this should be set to *disabled*.
       default: 'undefined'
       selector: 
         select:
@@ -106,6 +121,29 @@ blueprint:
               value: '1'
             - label: Physical control (big button) disabled (control via Z-Wave only)
               value: '0'
+
+    led_mode:
+      name: "Configuration: Relay LED (big button) indicator mode"
+      description: >
+        Control what the LED indicator on Scene 5 (big button) does with the relay.
+
+
+        If reassigning the local load to another button, this should be set to *always off*.
+      default: 'undefined'
+      selector: 
+        select:
+          mode: dropdown
+          options:
+            - label: Do not modify configuration
+              value: 'undefined'
+            - label: LED on when relay off, LED off when relay on (default) 
+              value: '0'
+            - label: LED on when relay on, LED off when relay off
+              value: '1'
+            - label: LED always off
+              value: '2'
+            - label: LED always on
+              value: '3'
 
 mode: restart
 max_exceeded: silent
@@ -140,6 +178,7 @@ action:
       device_id: !input device_id
       target_light: !input target_light
       local_control: !input local_control
+      led_mode: !input led_mode
 
       # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
       led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
@@ -150,15 +189,24 @@ action:
       # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
-        # setup local control
         - if:
           - condition: template
             value_template: "{{ local_control != 'undefined' }}"
           then:
           - service: zwave_js.set_config_parameter
             data:
-              parameter: 19
-              value: !input local_control
+              parameter: 19                 # Local control mode
+              value: !input local_control   # directly set from dropdown
+            target: 
+              device_id: !input device_id
+        - if:
+          - condition: template
+            value_template: "{{ led_mode != 'undefined' }}"
+          then:
+          - service: zwave_js.set_config_parameter
+            data:
+              parameter: 1                  # LED indicator mode for relay button
+              value: !input led_mode        # directly set from dropdown
             target: 
               device_id: !input device_id
 
