@@ -1,9 +1,8 @@
 blueprint:
-  name: "Zooz ZEN76 S2 Switch: Scene Control"
+  name: "Zooz ZEN76 S2 Switch"
   description: >
-    Scene control for the 
-    Zooz ZEN76 S2 700-series switch
-    using the Zwave JS integration.
+    Setup actions for all the different key press combinations on the
+    Zooz ZEN76 S2 700-series switch.
   domain: automation
 
   input:

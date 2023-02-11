@@ -1,9 +1,8 @@
 blueprint:
-  name: "Zooz ZEN52 Dual Relay: Scene Control"
+  name: "Zooz ZEN52 Dual Relay"
   description: >
-    Scene control for the 
-    Zooz ZEN52 Dual Relay 
-    using the Zwave JS integration.
+    Setup actions for all the different input combinations on the
+    Zooz ZEN52 Dual Relay.
   domain: automation
 
   input:

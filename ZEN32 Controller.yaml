@@ -1,9 +1,7 @@
 blueprint:
-  name: "Zooz ZEN32 Scene Controller: Scene Control"
+  name: "Zooz ZEN32 Scene Controller: Button actions"
   description: <
-    Scene control for the 
-    Zooz ZEN32 Scene Controller
-    using the Zwave JS integration.
+    Setup actions for individual buttons on the Zooz ZEN32 Scene Controller.
   domain: automation
 
   input:

@@ -1,9 +1,8 @@
 blueprint:
-  name: "Zooz ZEN77 S2 Dimmer: Scene Control"
+  name: "Zooz ZEN77 S2 Dimmer"
   description: >
-    Scene control for the 
-    Zooz ZEN77 S2 700-series dimmer
-    using the Zwave JS integration.
+    Setup actions for all the different key press combinations on the
+    Zooz ZEN77 S2 700-series dimmer.
   domain: automation
 
   input:

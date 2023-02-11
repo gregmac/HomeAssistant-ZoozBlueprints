@@ -3,7 +3,7 @@ blueprint:
   # based on https://community.home-assistant.io/t/control-a-light-with-a-button-on-a-zooz-zen32-scene-controller/427705
   # and https://community.home-assistant.io/t/set-the-indicator-light-on-a-zooz-zen32-scene-controller-button-to-match-the-state-of-a-light/427707
   description: >
-    Light link for the Zooz ZEN32 Scene Controller using the Zwave JS integration.
+    Link a Zooz ZEN32 Scene Controller button to a specific light.
 
 
     Press button **once** to toggle the light, **double-tap** to set to max brightness,
