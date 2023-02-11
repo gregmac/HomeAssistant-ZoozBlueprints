@@ -151,24 +151,24 @@ action:
       # docs: https://www.support.getzooz.com/kb/article/549-zen76-s2-on-off-switch-700-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
-        # enable scene control
-        - service: zwave_js.set_config_parameter
-          data:
-            parameter: 10
-            value: 1
-          target: 
-            device_id: !input device_id
-        # setup local control
-        - if:
-          - condition: template
-            value_template: "{{ '!input local_control' != 'undefined' }}"
-          then:
+          # enable scene control
           - service: zwave_js.set_config_parameter
             data:
-              parameter: 12
-              value: !input local_control
+              parameter: 10
+              value: 1
             target: 
               device_id: !input device_id
+          # setup local control
+          - if:
+              - condition: template
+                value_template: "{{ '!input local_control' != 'undefined' }}"
+            then:
+              - service: zwave_js.set_config_parameter
+                data:
+                  parameter: 12
+                  value: !input local_control
+                target: 
+                  device_id: !input device_id
 
       - conditions: "{{ scene_id == 'Scene 001' }}"
         sequence:

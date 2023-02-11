@@ -161,34 +161,34 @@ action:
       # docs: https://www.support.getzooz.com/kb/article/805-zen52-double-relay-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
-        # enable scene control
-        - service: zwave_js.set_config_parameter
-          data:
-            parameter: 16
-            value: 1
-          target: 
-            device_id: !input device_id
-        # setup local control
-        - if:
-          - condition: template
-            value_template: "{{ '!input local_control_1' != 'undefined' }}"
-          then:
+          # enable scene control
           - service: zwave_js.set_config_parameter
             data:
-              parameter: 17
-              value: !input local_control_1
+              parameter: 16
+              value: 1
             target: 
               device_id: !input device_id
-        - if:
-          - condition: template
-            value_template: "{{ '!input local_control_2' != 'undefined' }}"
-          then:
-          - service: zwave_js.set_config_parameter
-            data:
-              parameter: 18
-              value: !input local_control_2
-            target: 
-              device_id: !input device_id
+          # setup local control
+          - if:
+              - condition: template
+                value_template: "{{ '!input local_control_1' != 'undefined' }}"
+            then:
+              - service: zwave_js.set_config_parameter
+                data:
+                  parameter: 17
+                  value: !input local_control_1
+                target: 
+                  device_id: !input device_id
+          - if:
+              - condition: template
+                value_template: "{{ '!input local_control_2' != 'undefined' }}"
+            then:
+              - service: zwave_js.set_config_parameter
+                data:
+                  parameter: 18
+                  value: !input local_control_2
+                target: 
+                  device_id: !input device_id
 
       - conditions: "{{ scene_id == 'Scene 001' }}"
         sequence:

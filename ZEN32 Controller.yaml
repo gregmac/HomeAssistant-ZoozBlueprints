@@ -276,16 +276,16 @@ action:
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
         # setup local control
-        - if:
-          - condition: template
-            value_template: "{{ '!input local_control' != 'undefined' }}"
-          then:
-          - service: zwave_js.set_config_parameter
-            data:
-              parameter: 19
-              value: !input local_control
-            target: 
-              device_id: !input device_id
+          - if:
+              - condition: template
+                value_template: "{{ '!input local_control' != 'undefined' }}"
+            then:
+              - service: zwave_js.set_config_parameter
+                data:
+                  parameter: 19
+                  value: !input local_control
+                target: 
+                  device_id: !input device_id
 
       - conditions: "{{ scene_id == 'Scene 005' }}"
         sequence: 

@@ -153,24 +153,24 @@ action:
       # docs: https://www.support.getzooz.com/kb/article/550-zen77-s2-dimmer-700-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
-        # enable scene control
-        - service: zwave_js.set_config_parameter
-          data:
-            parameter: 13
-            value: 1
-          target: 
-            device_id: !input device_id
-        # setup local control
-        - if:
-          - condition: template
-            value_template: "{{ '!input local_control' != 'undefined' }}"
-          then:
+          # enable scene control
           - service: zwave_js.set_config_parameter
             data:
-              parameter: 15
-              value: !input local_control
+              parameter: 13
+              value: 1
             target: 
               device_id: !input device_id
+          # setup local control
+          - if:
+              - condition: template
+                value_template: "{{ '!input local_control' != 'undefined' }}"
+            then:
+              - service: zwave_js.set_config_parameter
+                data:
+                  parameter: 15
+                  value: !input local_control
+                target: 
+                  device_id: !input device_id
 
       # button press event
       - conditions: "{{ scene_id == 'Scene 001' }}"

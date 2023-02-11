@@ -189,26 +189,26 @@ action:
       # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
-        - if:
-          - condition: template
-            value_template: "{{ local_control != 'undefined' }}"
-          then:
-          - service: zwave_js.set_config_parameter
-            data:
-              parameter: 19                 # Local control mode
-              value: !input local_control   # directly set from dropdown
-            target: 
-              device_id: !input device_id
-        - if:
-          - condition: template
-            value_template: "{{ led_mode != 'undefined' }}"
-          then:
-          - service: zwave_js.set_config_parameter
-            data:
-              parameter: 1                  # LED indicator mode for relay button
-              value: !input led_mode        # directly set from dropdown
-            target: 
-              device_id: !input device_id
+          - if:
+              - condition: template
+                value_template: "{{ local_control != 'undefined' }}"
+            then:
+              - service: zwave_js.set_config_parameter
+                data:
+                  parameter: 19                 # Local control mode
+                  value: !input local_control   # directly set from dropdown
+                target: 
+                  device_id: !input device_id
+          - if:
+              - condition: template
+                value_template: "{{ led_mode != 'undefined' }}"
+            then:
+              - service: zwave_js.set_config_parameter
+                data:
+                  parameter: 1                  # LED indicator mode for relay button
+                  value: !input led_mode        # directly set from dropdown
+                target: 
+                  device_id: !input device_id
 
       # controller
       - alias: Controller button pressed
