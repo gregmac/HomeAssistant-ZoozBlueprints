@@ -250,18 +250,8 @@ action:
                       entity_id: !input target_light
 
       # light changed
-      - alias: Light turned on/changed to full brightness
-        conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'on' and trigger.to_state.brightness >= full_brightness }}"
-        sequence: 
-          - alias: Turn off ZEN32 indicator LED
-            service: zwave_js.set_config_parameter 
-            data:
-              parameter: "{{ led_indicator_mode_param }}"
-              value: "{{ led_always_off }}"
-            target: 
-              device_id: !input device_id
       - alias: Light turned on/changed to less than full brightness
-        conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'on' }}"
+        conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'on' and trigger.to_state.brightness < full_brightness }}"
         sequence:
           - parallel: 
               - alias: Set ZEN32 indicator LED color
@@ -278,6 +268,16 @@ action:
                   value: "{{ led_always_on }}"
                 target: 
                   device_id: !input device_id
+      - alias: Light turned on/changed to full brightness
+        conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'on' }}"
+        sequence: 
+          - alias: Turn off ZEN32 indicator LED
+            service: zwave_js.set_config_parameter 
+            data:
+              parameter: "{{ led_indicator_mode_param }}"
+              value: "{{ led_always_off }}"
+            target: 
+              device_id: !input device_id
       - alias: Light turned off
         conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'off' }}"
         sequence:
