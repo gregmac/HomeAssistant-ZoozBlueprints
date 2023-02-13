@@ -52,12 +52,13 @@ blueprint:
 
     target_light:
       name: Target
-      description: The light or switch to link to button
+      description: The light, switch or group to link to button
       selector:
         entity:
           domain:
           - light
           - switch
+          - group
 
     night_light_brightness:
       name: Night Light Brightness
