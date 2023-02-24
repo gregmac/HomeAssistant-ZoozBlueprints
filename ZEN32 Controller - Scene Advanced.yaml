@@ -240,15 +240,15 @@ action:
       light8_diff: "{{ (light8_brightness - light8_cur_brightness|int(999)) | abs | round }}"
       light9_diff: "{{ (light9_brightness - light9_cur_brightness|int(999)) | abs | round }}"
 
-      light1_match: "{{ light1_diff < match_delta }}"
-      light2_match: "{{ light2_diff < match_delta }}"
-      light3_match: "{{ light3_diff < match_delta }}"
-      light4_match: "{{ light4_diff < match_delta }}"
-      light5_match: "{{ light5_diff < match_delta }}"
-      light6_match: "{{ light6_diff < match_delta }}"
-      light7_match: "{{ light7_diff < match_delta }}"
-      light8_match: "{{ light8_diff < match_delta }}"
-      light9_match: "{{ light9_diff < match_delta }}"
+      light1_match: "{{ light1_diff <= match_delta }}"
+      light2_match: "{{ light2_diff <= match_delta }}"
+      light3_match: "{{ light3_diff <= match_delta }}"
+      light4_match: "{{ light4_diff <= match_delta }}"
+      light5_match: "{{ light5_diff <= match_delta }}"
+      light6_match: "{{ light6_diff <= match_delta }}"
+      light7_match: "{{ light7_diff <= match_delta }}"
+      light8_match: "{{ light8_diff <= match_delta }}"
+      light9_match: "{{ light9_diff <= match_delta }}"
 
       scene_active: >-
         {{
