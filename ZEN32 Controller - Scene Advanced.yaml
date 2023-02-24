@@ -373,7 +373,9 @@ action:
             data:
               brightness_pct: 100
             target: 
-              entity_id: !input light1
+              entity_id: 
+              - !input light1
+              - !input light2
 
       - alias: 'Controller button held, or once with scene not active: Turn off'
         conditions: >-
@@ -389,13 +391,23 @@ action:
         sequence: 
           - service: light.turn_off
             target: 
-              entity_id: !input light1
+              entity_id:
+              - !input light1
+              - !input light2
 
       - alias: 'Controller button once: Activate scene'
         conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed' }}"
         sequence:
-          - service: light.turn_on
-            target: 
-              entity_id: !input light1
-            data:
-              brightness_pct: !input light1_brightness
+          - parallel:
+            - service: light.turn_on
+              target: 
+                entity_id:
+                - !input light1
+              data:
+                brightness_pct: !input light1_brightness
+            - service: light.turn_on
+              target: 
+                entity_id:
+                - !input light2
+              data:
+                brightness_pct: !input light2_brightness
