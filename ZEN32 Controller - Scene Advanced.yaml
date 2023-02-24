@@ -116,8 +116,8 @@ blueprint:
             - label: Red
               value: '3'
 
-    partial_match_color:
-      name: 'LED Indicator: Scene partially active'
+    any_on_color:
+      name: 'LED Indicator: Any scene lights on'
       description: Scene button indicator color when any light is on but scene isn't active (default blue)
       default: '1'
       selector:
@@ -135,8 +135,8 @@ blueprint:
             - label: Red
               value: '3'
 
-    no_match_color:
-      name: 'LED Indicator: Scene not active'
+    all_off_color:
+      name: 'LED Indicator: All lights off'
       description: Scene button indicator color when no lights match (default white)
       default: '0'
       selector:
@@ -180,8 +180,8 @@ variables:
   device_id: !input device_id
   scene_button: !input scene_button
   all_match_color: !input all_match_color
-  partial_match_color: !input partial_match_color
-  no_match_color: !input no_match_color
+  any_on_color: !input any_on_color
+  all_off_color: !input all_off_color
   match_delta: !input match_delta
 
   light1: !input light1
@@ -227,7 +227,7 @@ action:
       light2_match: "{{ light2_diff < match_delta }}"
 
       all_match: "{{ light1_match and (light2_match or not light2) }}"
-      any_match: "{{ light1_match or  (light2_match and    light2) }}"
+      any_on: "{{ light1_cur_state == 'on' or light2_cur_state == 'on' }}"
 
   - choose:
       # initialize
@@ -287,7 +287,7 @@ action:
                 trigger.entity_id: {{ trigger.entity_id }}
 
                 all_match: {{ all_match }}
-                any_match: {{ any_match }}
+                any_on: {{ any_on }}
 
                 light1: {{ light1 }}
                 light1_brightness: {{ light1_brightness }}
@@ -333,8 +333,8 @@ action:
                         target: 
                           device_id: !input device_id
 
-              - alias: "Any match, LED color = off"
-                conditions: "{{ any_match and partial_match_color == '-1' }}"
+              - alias: "Any on, LED color = off"
+                conditions: "{{ any_on and any_on_color == '-1' }}"
                 sequence: 
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
@@ -343,15 +343,15 @@ action:
                       value: "{{ led_always_off }}"
                     target: 
                       device_id: !input device_id
-              - alias: "Any match, LED color specified"
-                conditions: "{{ any_match }}"
+              - alias: "Any on, LED color specified"
+                conditions: "{{ any_on }}"
                 sequence:
                   - parallel: 
                       - alias: Set ZEN32 indicator LED color
                         service: zwave_js.set_config_parameter 
                         data:
                           parameter: "{{ led_indicator_color_param }}"
-                          value: !input partial_match_color
+                          value: !input any_on_color
                         target: 
                           device_id: !input device_id
                       - alias: Turn on ZEN32 indicator LED
@@ -363,7 +363,7 @@ action:
                           device_id: !input device_id
 
               - alias: "No match, LED color = off"
-                conditions: "{{ no_match_color == '-1'}}"
+                conditions: "{{ all_off_color == '-1'}}"
                 sequence:
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
@@ -380,7 +380,7 @@ action:
                       service: zwave_js.set_config_parameter 
                       data:
                         parameter: "{{ led_indicator_color_param }}"
-                        value: !input no_match_color
+                        value: !input all_off_color
                       target: 
                         device_id: !input device_id
                     - alias: Turn on ZEN32 indicator LED
