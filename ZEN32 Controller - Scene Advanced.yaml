@@ -97,7 +97,7 @@ blueprint:
     #       max: 100
     #       unit_of_measurement: '%'
 
-    all_match_color:
+    scene_active_color:
       name: 'LED Indicator: Scene active'
       description: Scene button indicator color when scene is active (default off)
       default: '-1'
@@ -179,7 +179,7 @@ variables:
   # entities
   device_id: !input device_id
   scene_button: !input scene_button
-  all_match_color: !input all_match_color
+  scene_active_color: !input scene_active_color
   any_on_color: !input any_on_color
   all_off_color: !input all_off_color
   match_delta: !input match_delta
@@ -226,7 +226,7 @@ action:
       light1_match: "{{ light1_diff < match_delta }}"
       light2_match: "{{ light2_diff < match_delta }}"
 
-      all_match: "{{ light1_match and (light2_match or not light2) }}"
+      scene_active: "{{ light1_match and (light2_match or not light2) }}"
       any_on: "{{ light1_cur_state == 'on' or light2_cur_state == 'on' }}"
 
   # initialize
@@ -249,7 +249,7 @@ action:
       message: |
         trigger.entity_id: {{ trigger.entity_id }}
 
-        all_match: {{ all_match }}
+        scene_active: {{ scene_active }}
         any_on: {{ any_on }}
 
         light1: {{ light1 }}
@@ -278,7 +278,7 @@ action:
         sequence:
           - choose:
               - alias: "All match, LED color = off"
-                conditions: "{{ all_match and all_match_color == '-1' }}"
+                conditions: "{{ scene_active and scene_active_color == '-1' }}"
                 sequence: 
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
@@ -288,14 +288,14 @@ action:
                     target: 
                       device_id: !input device_id
               - alias: "All match, LED color specified"
-                conditions: "{{ all_match }}"
+                conditions: "{{ scene_active }}"
                 sequence: 
                   - parallel: 
                       - alias: Set ZEN32 indicator LED color
                         service: zwave_js.set_config_parameter 
                         data:
                           parameter: "{{ led_indicator_color_param }}"
-                          value: !input all_match_color
+                          value: !input scene_active_color
                         target: 
                           device_id: !input device_id
                       - alias: Turn on ZEN32 indicator LED
@@ -381,7 +381,7 @@ action:
             trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button 
             and (
               (
-                trigger.event.data.value == 'KeyPressed' and all_match
+                trigger.event.data.value == 'KeyPressed' and scene_active
               )
               or trigger.event.data.value == 'KeyHeldDown'
             )
