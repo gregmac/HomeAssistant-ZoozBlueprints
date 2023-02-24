@@ -38,139 +38,32 @@ blueprint:
             - label: Scene 4 (Bottom Right)
               value: '004'
 
-    light1:
-      name: Light 1
-      selector:
-        entity: 
-          domain: light
-    light1_brightness:
-      name: Light 1 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light1:            { name: "Light 1",            default: [],  selector: { entity: { domain: light } } }
+    light1_brightness: { name: "Light 1 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
-    light2:
-      name: Light 2
-      default: []
-      selector:
-        entity: 
-          domain: light
-    light2_brightness:
-      name: Light 2 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light2:            { name: "Light 2",            default: [],  selector: { entity: { domain: light } } }
+    light2_brightness: { name: "Light 2 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
-    light3:
-      name: Light 3
-      default: []
-      selector:
-        entity: 
-          domain: light
-    light3_brightness:
-      name: Light 3 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light3:            { name: "Light 3",            default: [],  selector: { entity: { domain: light } } }
+    light3_brightness: { name: "Light 3 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
-    light4:
-      name: Light 4
-      default: []
-      selector:
-        entity: 
-          domain: light
-    light4_brightness:
-      name: Light 4 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light4:            { name: "Light 4",            default: [],  selector: { entity: { domain: light } } }
+    light4_brightness: { name: "Light 4 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
-    light5:
-      name: Light 5
-      default: []
-      selector:
-        entity: 
-          domain: light
-    light5_brightness:
-      name: Light 5 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light5:            { name: "Light 5",            default: [],  selector: { entity: { domain: light } } }
+    light5_brightness: { name: "Light 5 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
-    light6:
-      name: Light 6
-      default: []
-      selector:
-        entity: 
-          domain: light
-    light6_brightness:
-      name: Light 6 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light6:            { name: "Light 6",            default: [],  selector: { entity: { domain: light } } }
+    light6_brightness: { name: "Light 6 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
-    light7:
-      name: Light 7
-      default: []
-      selector:
-        entity: 
-          domain: light
-    light7_brightness:
-      name: Light 7 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light7:            { name: "Light 7",            default: [],  selector: { entity: { domain: light } } }
+    light7_brightness: { name: "Light 7 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
-    light8:
-      name: Light 8
-      default: []
-      selector:
-        entity: 
-          domain: light
-    light8_brightness:
-      name: Light 8 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light8:            { name: "Light 8",            default: [],  selector: { entity: { domain: light } } }
+    light8_brightness: { name: "Light 8 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
-    light9:
-      name: Light 9
-      default: []
-      selector:
-        entity: 
-          domain: light
-    light9_brightness:
-      name: Light 9 Brightness
-      default: 100
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+    light9:            { name: "Light 9",            default: [],  selector: { entity: { domain: light } } }
+    light9_brightness: { name: "Light 9 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
 
     scene_active_color:
       name: 'LED Indicator: Scene active'
@@ -442,87 +335,60 @@ action:
                 sequence: 
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
-                    data:
-                      parameter: "{{ led_indicator_mode_param }}"
-                      value: "{{ led_always_off }}"
-                    target: 
-                      device_id: !input device_id
+                    target: { device_id: !input device_id }
+                    data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
               - alias: "All match, LED color specified"
                 conditions: "{{ scene_active }}"
                 sequence: 
                   - parallel: 
                       - alias: Set ZEN32 indicator LED color
                         service: zwave_js.set_config_parameter 
-                        data:
-                          parameter: "{{ led_indicator_color_param }}"
-                          value: !input scene_active_color
-                        target: 
-                          device_id: !input device_id
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_color_param }}", value: !input scene_active_color }
                       - alias: Turn on ZEN32 indicator LED
                         service: zwave_js.set_config_parameter 
-                        data:
-                          parameter: "{{ led_indicator_mode_param }}"
-                          value: "{{ led_always_on }}"
-                        target: 
-                          device_id: !input device_id
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
 
               - alias: "Any on, LED color = off"
                 conditions: "{{ any_on and any_on_color == '-1' }}"
                 sequence: 
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
-                    data:
-                      parameter: "{{ led_indicator_mode_param }}"
-                      value: "{{ led_always_off }}"
-                    target: 
-                      device_id: !input device_id
+                    target: { device_id: !input device_id }
+                    data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
               - alias: "Any on, LED color specified"
                 conditions: "{{ any_on }}"
                 sequence:
                   - parallel: 
                       - alias: Set ZEN32 indicator LED color
                         service: zwave_js.set_config_parameter 
-                        data:
-                          parameter: "{{ led_indicator_color_param }}"
-                          value: !input any_on_color
-                        target: 
-                          device_id: !input device_id
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_color_param }}", value: !input any_on_color }
                       - alias: Turn on ZEN32 indicator LED
                         service: zwave_js.set_config_parameter 
-                        data:
-                          parameter: "{{ led_indicator_mode_param }}"
-                          value: "{{ led_always_on }}"
-                        target: 
-                          device_id: !input device_id
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
 
               - alias: "No match, LED color = off"
                 conditions: "{{ all_off_color == '-1'}}"
                 sequence:
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
-                    data:
-                      parameter: "{{ led_indicator_mode_param }}"
-                      value: "{{ led_always_off }}"
-                    target: 
-                      device_id: !input device_id
+                    target: { device_id: !input device_id }
+                    data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
               - alias: "No match, LED color specified"
                 conditions: "{{ true }}"
                 sequence:
                   - parallel: 
                     - alias: Set ZEN32 indicator LED color
                       service: zwave_js.set_config_parameter 
-                      data:
-                        parameter: "{{ led_indicator_color_param }}"
-                        value: !input all_off_color
-                      target: 
-                        device_id: !input device_id
+                      target: {device_id: !input device_id}
+                      data: { parameter: "{{ led_indicator_color_param }}", value: !input all_off_color }
                     - alias: Turn on ZEN32 indicator LED
-                      service: zwave_js.set_config_parameter 
-                      data:
-                        parameter: "{{ led_indicator_mode_param }}"
-                        value: "{{ led_always_on }}"
-                      target: 
-                        device_id: !input device_id
+                      service: zwave_js.set_config_parameter
+                      target: { device_id: !input device_id }
+                      data: { parameter: '{{ led_indicator_mode_param }}', value: '{{ led_always_on }}' }
 
       # controller
 
