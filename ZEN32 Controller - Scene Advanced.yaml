@@ -97,7 +97,64 @@ blueprint:
     #       max: 100
     #       unit_of_measurement: '%'
 
-    on_delta:
+    all_match_color:
+      name: 'LED Indicator: Scene active'
+      description: Scene button indicator color when scene is active (default off)
+      default: '-1'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    partial_match_color:
+      name: 'LED Indicator: Scene partially active'
+      description: Scene button indicator color when any light is on but scene isn't active (default blue)
+      default: '1'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    no_match_color:
+      name: 'LED Indicator: Scene not active'
+      description: Scene button indicator color when no lights match (default white)
+      default: '0'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    match_delta:
       name: Delta
       description: What % current brightness has to be within desired to be considered "on"
       default: 5
@@ -122,7 +179,10 @@ variables:
   # entities
   device_id: !input device_id
   scene_button: !input scene_button
-  on_delta: !input on_delta
+  all_match_color: !input all_match_color
+  partial_match_color: !input partial_match_color
+  no_match_color: !input no_match_color
+  match_delta: !input match_delta
 
   light1: !input light1
   light2: !input light2
@@ -163,11 +223,11 @@ action:
       light1_diff: "{{ ((light1_brightness*2.55) - light1_cur_brightness) | abs | round }}"
       light2_diff: "{{ ((light2_brightness*2.55) - light2_cur_brightness) | abs | round }}"
 
-      light1_on: "{{ light1_diff < on_delta }}"
-      light2_on: "{{ light2_diff < on_delta }}"
+      light1_match: "{{ light1_diff < match_delta }}"
+      light2_match: "{{ light2_diff < match_delta }}"
 
-      all_on: "{{ light1_on and light2_on }}"
-      any_on: "{{ light1_on or  light2_on }}"
+      all_match: "{{ light1_match and light2_match }}"
+      any_match: "{{ light1_match or  light2_match }}"
 
   - choose:
       # initialize
@@ -210,7 +270,6 @@ action:
                     target: 
                       entity_id: !input light1
 
-
       # light changed
       - alias: Light state changed
         conditions: |
@@ -227,19 +286,102 @@ action:
               message: |
                 trigger.entity_id: {{ trigger.entity_id }}
 
-                all_on: {{ all_on }}
-                any_on: {{ any_on }}
+                all_match: {{ all_match }}
+                any_match: {{ any_match }}
 
                 light1: {{ light1 }}
                 light1_brightness: {{ light1_brightness * 2.55 }}
                 light1_cur_state: {{ light1_cur_state }}
                 light1_cur_brightness: {{ light1_cur_brightness }}
                 light1_diff: {{ light1_diff }}
-                light1_on: {{ light1_on }}
+                light1_match: {{ light1_match }}
 
                 light2: {{ light2 }}
                 light2_brightness: {{ light2_brightness * 2.55}}
                 light2_cur_state: {{ light2_cur_state }}
                 light2_cur_brightness: {{ light2_cur_brightness }}
                 light2_diff: {{ light2_diff }}
-                light2_on: {{ light2_on }}
+                light2_match: {{ light2_match }}
+
+          - choose:
+              - conditions: "{{ all_match and all_match_color == '-1' }}"
+                sequence: 
+                  - alias: Turn off ZEN32 indicator LED
+                    service: zwave_js.set_config_parameter 
+                    data:
+                      parameter: "{{ led_indicator_mode_param }}"
+                      value: "{{ led_always_off }}"
+                    target: 
+                      device_id: !input device_id
+              - conditions: "{{ all_match }}"
+                sequence: 
+                  - parallel: 
+                      - alias: Set ZEN32 indicator LED color
+                        service: zwave_js.set_config_parameter 
+                        data:
+                          parameter: "{{ led_indicator_color_param }}"
+                          value: !input all_match_color
+                        target: 
+                          device_id: !input device_id
+                      - alias: Turn on ZEN32 indicator LED
+                        service: zwave_js.set_config_parameter 
+                        data:
+                          parameter: "{{ led_indicator_mode_param }}"
+                          value: "{{ led_always_on }}"
+                        target: 
+                          device_id: !input device_id
+
+              - conditions: "{{ any_match and partial_match_color == '-1' }}"
+                sequence: 
+                  - alias: Turn off ZEN32 indicator LED
+                    service: zwave_js.set_config_parameter 
+                    data:
+                      parameter: "{{ led_indicator_mode_param }}"
+                      value: "{{ led_always_off }}"
+                    target: 
+                      device_id: !input device_id
+              - conditions: "{{ any_match }}"
+                sequence:
+                  - parallel: 
+                      - alias: Set ZEN32 indicator LED color
+                        service: zwave_js.set_config_parameter 
+                        data:
+                          parameter: "{{ led_indicator_color_param }}"
+                          value: !input partial_match_color
+                        target: 
+                          device_id: !input device_id
+                      - alias: Turn on ZEN32 indicator LED
+                        service: zwave_js.set_config_parameter 
+                        data:
+                          parameter: "{{ led_indicator_mode_param }}"
+                          value: "{{ led_always_on }}"
+                        target: 
+                          device_id: !input device_id
+
+              - conditions: "{{ no_match_color == '-1'}}"
+                sequence:
+                  - alias: Turn off ZEN32 indicator LED
+                    service: zwave_js.set_config_parameter 
+                    data:
+                      parameter: "{{ led_indicator_mode_param }}"
+                      value: "{{ led_always_off }}"
+                    target: 
+                      device_id: !input device_id
+
+            default:
+              - parallel: 
+                - alias: Set ZEN32 indicator LED color
+                  service: zwave_js.set_config_parameter 
+                  data:
+                    parameter: "{{ led_indicator_color_param }}"
+                    value: !input no_match_color
+                  target: 
+                    device_id: !input device_id
+                - alias: Turn on ZEN32 indicator LED
+                  service: zwave_js.set_config_parameter 
+                  data:
+                    parameter: "{{ led_indicator_mode_param }}"
+                    value: "{{ led_always_on }}"
+                  target: 
+                    device_id: !input device_id
+
