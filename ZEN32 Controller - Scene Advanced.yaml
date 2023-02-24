@@ -1,13 +1,29 @@
 blueprint:
   name: "Zooz ZEN32 Scene Controller: Custom Scene Control"
+  #
+  # Design limitations:
+  #
+  # * Entities to triggers and actions aren't dynamic, so each entitiy has to be specified indivudally
+  # * Built-in "scene" objects have no useful state, so aside from inability to setup a trigger (above) 
+  #   can't be used for what this automation does
+  #
   description: >
-    Link a Zooz ZEN32 Scene Controller button to a custom scene.
+    Link a Zooz ZEN32 Scene Controller button to a custom scene. Supports one or more lights (all light
+    inputs are optional). 
 
 
-    Due to HomeAssistant limitations with scenes, an enity must be picked to show status
-    of the scene. The best choice is to create a group that contains all the entities
-    in the scene and use that.
+    * Press button once to activate the scene. If the scene is already active, it is turned off.
 
+    * Press button twice to turn on all lights to 100%
+
+    * Hold button to turn off all lights
+
+
+    The Scene Controller LED indicator indicates the state of the scene: scene active, some lights on, or all
+    lights off. This works regardless of if the lights were controlled using the button or not.
+
+
+    Running the automation manually also actives the scene.
 
   domain: automation
   input:
@@ -21,7 +37,7 @@ blueprint:
           model: ZEN32
     scene_button:
       name: Scene Button
-      description: The button to link to light
+      description: The button to setup as the scene control
       default: '001'
       selector:
         select:
@@ -86,7 +102,7 @@ blueprint:
 
     any_on_color:
       name: 'LED Indicator: Any scene lights on'
-      description: Scene button indicator color when any light is on but scene isn't active (default blue)
+      description: Scene button indicator color when any scene light is on but scene isn't active (default blue)
       default: '1'
       selector:
         select:
@@ -105,7 +121,7 @@ blueprint:
 
     all_off_color:
       name: 'LED Indicator: All lights off'
-      description: Scene button indicator color when no lights match (default white)
+      description: Scene button indicator color when all scene lights are off (default white)
       default: '0'
       selector:
         select:
@@ -123,8 +139,14 @@ blueprint:
               value: '3'
 
     match_delta:
-      name: Delta
-      description: What % current brightness has to be within desired to be considered "on"
+      name: Active threshold
+      description: >
+        Threshold for how close current light brightness (%) needs to be to the configured brightnes
+        for the scene to be considered "active".
+
+
+        For example, if the scene has the light set to 100% and the light is currently at 98%, 
+        setting this to 2% or higher will cause the scene to be considered as "active".
       default: 5
       selector:
         number:
@@ -370,14 +392,14 @@ action:
                         target: { device_id: !input device_id }
                         data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
 
-              - alias: "No match, LED color = off"
+              - alias: "All off, LED color = off"
                 conditions: "{{ all_off_color == '-1'}}"
                 sequence:
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
                     target: { device_id: !input device_id }
                     data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
-              - alias: "No match, LED color specified"
+              - alias: "All off, LED color specified"
                 conditions: "{{ true }}"
                 sequence:
                   - parallel: 
