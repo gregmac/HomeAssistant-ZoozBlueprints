@@ -241,6 +241,30 @@ action:
           value: 1                          # LED indicators don't flash if a setting is changed.
         target: 
           device_id: !input device_id
+  
+  # debug
+  - service: logbook.log
+    data:
+      name: AutomationTest
+      message: |
+        trigger.entity_id: {{ trigger.entity_id }}
+
+        all_match: {{ all_match }}
+        any_on: {{ any_on }}
+
+        light1: {{ light1 }}
+        light1_brightness: {{ light1_brightness }}
+        light1_cur_state: {{ light1_cur_state }}
+        light1_cur_brightness: {{ light1_cur_brightness }}
+        light1_diff: {{ light1_diff }}
+        light1_match: {{ light1_match }}
+
+        light2: {{ light2 }}
+        light2_brightness: {{ light2_brightness }}
+        light2_cur_state: {{ light2_cur_state }}
+        light2_cur_brightness: {{ light2_cur_brightness }}
+        light2_diff: {{ light2_diff }}
+        light2_match: {{ light2_match }}
 
   - choose:
       # controller
@@ -273,36 +297,13 @@ action:
 
       # initializing, or light changed
       - alias: Light state changed
-        conditions: |
+        conditions: >-
           {{
             (trigger.event and trigger.event.event_type == 'automation_reloaded')
             or trigger.entity_id == light1 
             or trigger.entity_id == light2
           }}
         sequence:
-          - service: logbook.log
-            data:
-              name: AutomationTest
-              message: |
-                trigger.entity_id: {{ trigger.entity_id }}
-
-                all_match: {{ all_match }}
-                any_on: {{ any_on }}
-
-                light1: {{ light1 }}
-                light1_brightness: {{ light1_brightness }}
-                light1_cur_state: {{ light1_cur_state }}
-                light1_cur_brightness: {{ light1_cur_brightness }}
-                light1_diff: {{ light1_diff }}
-                light1_match: {{ light1_match }}
-
-                light2: {{ light2 }}
-                light2_brightness: {{ light2_brightness }}
-                light2_cur_state: {{ light2_cur_state }}
-                light2_cur_brightness: {{ light2_cur_brightness }}
-                light2_diff: {{ light2_diff }}
-                light2_match: {{ light2_match }}
-
           - choose:
               - alias: "All match, LED color = off"
                 conditions: "{{ all_match and all_match_color == '-1' }}"
