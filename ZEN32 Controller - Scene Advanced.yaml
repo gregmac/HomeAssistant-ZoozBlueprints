@@ -313,11 +313,11 @@ action:
         light2_match: {{ light2_match }}
 
   - choose:
-      # initializing, or light changed
-      - alias: Light state changed
+      - alias: Initializing, or Light state changed
         conditions: >-
           {{
             (trigger.event and trigger.event.event_type == 'automation_reloaded')
+
             or trigger.entity_id == light1
             or trigger.entity_id == light2
             or trigger.entity_id == light3
@@ -330,14 +330,14 @@ action:
           }}
         sequence:
           - choose:
-              - alias: "All match, LED color = off"
+              - alias: "Scene active, LED color = off"
                 conditions: "{{ scene_active and scene_active_color == '-1' }}"
                 sequence: 
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
                     target: { device_id: !input device_id }
                     data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
-              - alias: "All match, LED color specified"
+              - alias: "Scene active, LED color specified"
                 conditions: "{{ scene_active }}"
                 sequence: 
                   - parallel: 
@@ -392,14 +392,15 @@ action:
 
       # controller
 
-
       - alias: 'Controller button held, or once with scene not active: Turn off'
         conditions: >-
           {{
-            trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button 
+                trigger.event.data.device_id == device_id 
+            and trigger.event.data.property_key_name == scene_button 
             and (
               (
-                trigger.event.data.value == 'KeyPressed' and scene_active
+                    trigger.event.data.value == 'KeyPressed'
+                and scene_active
               )
               or trigger.event.data.value == 'KeyHeldDown'
             )
@@ -419,7 +420,8 @@ action:
       - alias: 'Controller button pressed twice: Turn on full'
         conditions: >-
           {{
-            trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button
+                trigger.event.data.device_id == device_id
+            and trigger.event.data.property_key_name == scene_button
             and trigger.event.data.value == 'KeyPressed2x'
           }}
         sequence: 
@@ -434,11 +436,16 @@ action:
               - { service: light.turn_on, target: { entity_id: !input light8 }, data: { brightness_pct: 100 } }
               - { service: light.turn_on, target: { entity_id: !input light9 }, data: { brightness_pct: 100 } }
 
-      - alias: 'Controller button once: Activate scene'
+      - alias: 'Controller button once, or automation manually triggered: Activate scene'
         conditions: >-
           {{
-            trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button
-            and trigger.event.data.value == 'KeyPressed'
+            not trigger.event
+
+            or (
+              trigger.event.data.device_id == device_id
+              and trigger.event.data.property_key_name == scene_button
+              and trigger.event.data.value == 'KeyPressed'
+            )
           }}
         sequence:
           - parallel:
