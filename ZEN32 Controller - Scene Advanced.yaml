@@ -67,35 +67,110 @@ blueprint:
           max: 100
           unit_of_measurement: '%'
 
-    # light3:
-    #   name: Light 3
-    #   default: []
-    #   selector:
-    #     entity: 
-    #       domain: light
-    # light3_brightness:
-    #   name: Light 3 Brightness
-    #   default: 100
-    #   selector:
-    #     number:
-    #       min: 0
-    #       max: 100
-    #       unit_of_measurement: '%'
+    light3:
+      name: Light 3
+      default: []
+      selector:
+        entity: 
+          domain: light
+    light3_brightness:
+      name: Light 3 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
 
-    # light4:
-    #   name: Light 4
-    #   default: []
-    #   selector:
-    #     entity: 
-    #       domain: light
-    # light4_brightness:
-    #   name: Light 4 Brightness
-    #   default: 100
-    #   selector:
-    #     number:
-    #       min: 0
-    #       max: 100
-    #       unit_of_measurement: '%'
+    light4:
+      name: Light 4
+      default: []
+      selector:
+        entity: 
+          domain: light
+    light4_brightness:
+      name: Light 4 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+
+    light5:
+      name: Light 5
+      default: []
+      selector:
+        entity: 
+          domain: light
+    light5_brightness:
+      name: Light 5 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+
+    light6:
+      name: Light 6
+      default: []
+      selector:
+        entity: 
+          domain: light
+    light6_brightness:
+      name: Light 6 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+
+    light7:
+      name: Light 7
+      default: []
+      selector:
+        entity: 
+          domain: light
+    light7_brightness:
+      name: Light 7 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+
+    light8:
+      name: Light 8
+      default: []
+      selector:
+        entity: 
+          domain: light
+    light8_brightness:
+      name: Light 8 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+
+    light9:
+      name: Light 9
+      default: []
+      selector:
+        entity: 
+          domain: light
+    light9_brightness:
+      name: Light 9 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
 
     scene_active_color:
       name: 'LED Indicator: Scene active'
@@ -186,8 +261,22 @@ variables:
 
   light1: !input light1
   light2: !input light2
+  light3: !input light3
+  light4: !input light4
+  light5: !input light5
+  light6: !input light6
+  light7: !input light7
+  light8: !input light8
+  light9: !input light9
   light1_brightness: !input light1_brightness
   light2_brightness: !input light2_brightness
+  light3_brightness: !input light3_brightness
+  light4_brightness: !input light4_brightness
+  light5_brightness: !input light5_brightness
+  light6_brightness: !input light6_brightness
+  light7_brightness: !input light7_brightness
+  light8_brightness: !input light8_brightness
+  light9_brightness: !input light9_brightness
 
   # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
   led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
@@ -207,6 +296,20 @@ trigger:
     entity_id: !input light1
   - platform: state
     entity_id: !input light2
+  - platform: state
+    entity_id: !input light3
+  - platform: state
+    entity_id: !input light4
+  - platform: state
+    entity_id: !input light5
+  - platform: state
+    entity_id: !input light6
+  - platform: state
+    entity_id: !input light7
+  - platform: state
+    entity_id: !input light8
+  - platform: state
+    entity_id: !input light9
 
   # used for initialization
   - platform: event
@@ -216,18 +319,68 @@ action:
   - variables:
       light1_cur_state: "{%- if light1 -%}{{ states(light1) }}{%- endif -%}"
       light2_cur_state: "{%- if light2 -%}{{ states(light2) }}{%- endif -%}"
+      light3_cur_state: "{%- if light3 -%}{{ states(light3) }}{%- endif -%}"
+      light4_cur_state: "{%- if light4 -%}{{ states(light4) }}{%- endif -%}"
+      light5_cur_state: "{%- if light5 -%}{{ states(light5) }}{%- endif -%}"
+      light6_cur_state: "{%- if light6 -%}{{ states(light6) }}{%- endif -%}"
+      light7_cur_state: "{%- if light7 -%}{{ states(light7) }}{%- endif -%}"
+      light8_cur_state: "{%- if light8 -%}{{ states(light8) }}{%- endif -%}"
+      light9_cur_state: "{%- if light9 -%}{{ states(light9) }}{%- endif -%}"
 
       light1_cur_brightness: "{%- if light1 -%}{{ (((state_attr(light1, 'brightness')|int(light1_brightness*2.55))/2.55)|round) if light1_cur_state == 'on' else 0 }}{%- endif -%}"
       light2_cur_brightness: "{%- if light2 -%}{{ (((state_attr(light2, 'brightness')|int(light2_brightness*2.55))/2.55)|round) if light2_cur_state == 'on' else 0 }}{%- endif -%}"
+      light3_cur_brightness: "{%- if light3 -%}{{ (((state_attr(light3, 'brightness')|int(light3_brightness*2.55))/2.55)|round) if light3_cur_state == 'on' else 0 }}{%- endif -%}"
+      light4_cur_brightness: "{%- if light4 -%}{{ (((state_attr(light4, 'brightness')|int(light4_brightness*2.55))/2.55)|round) if light4_cur_state == 'on' else 0 }}{%- endif -%}"
+      light5_cur_brightness: "{%- if light5 -%}{{ (((state_attr(light5, 'brightness')|int(light5_brightness*2.55))/2.55)|round) if light5_cur_state == 'on' else 0 }}{%- endif -%}"
+      light6_cur_brightness: "{%- if light6 -%}{{ (((state_attr(light6, 'brightness')|int(light6_brightness*2.55))/2.55)|round) if light6_cur_state == 'on' else 0 }}{%- endif -%}"
+      light7_cur_brightness: "{%- if light7 -%}{{ (((state_attr(light7, 'brightness')|int(light7_brightness*2.55))/2.55)|round) if light7_cur_state == 'on' else 0 }}{%- endif -%}"
+      light8_cur_brightness: "{%- if light8 -%}{{ (((state_attr(light8, 'brightness')|int(light8_brightness*2.55))/2.55)|round) if light8_cur_state == 'on' else 0 }}{%- endif -%}"
+      light9_cur_brightness: "{%- if light9 -%}{{ (((state_attr(light9, 'brightness')|int(light9_brightness*2.55))/2.55)|round) if light9_cur_state == 'on' else 0 }}{%- endif -%}"
 
       light1_diff: "{{ (light1_brightness - light1_cur_brightness|int(999)) | abs | round }}"
       light2_diff: "{{ (light2_brightness - light2_cur_brightness|int(999)) | abs | round }}"
+      light3_diff: "{{ (light3_brightness - light3_cur_brightness|int(999)) | abs | round }}"
+      light4_diff: "{{ (light4_brightness - light4_cur_brightness|int(999)) | abs | round }}"
+      light5_diff: "{{ (light5_brightness - light5_cur_brightness|int(999)) | abs | round }}"
+      light6_diff: "{{ (light6_brightness - light6_cur_brightness|int(999)) | abs | round }}"
+      light7_diff: "{{ (light7_brightness - light7_cur_brightness|int(999)) | abs | round }}"
+      light8_diff: "{{ (light8_brightness - light8_cur_brightness|int(999)) | abs | round }}"
+      light9_diff: "{{ (light9_brightness - light9_cur_brightness|int(999)) | abs | round }}"
 
       light1_match: "{{ light1_diff < match_delta }}"
       light2_match: "{{ light2_diff < match_delta }}"
+      light3_match: "{{ light3_diff < match_delta }}"
+      light4_match: "{{ light4_diff < match_delta }}"
+      light5_match: "{{ light5_diff < match_delta }}"
+      light6_match: "{{ light6_diff < match_delta }}"
+      light7_match: "{{ light7_diff < match_delta }}"
+      light8_match: "{{ light8_diff < match_delta }}"
+      light9_match: "{{ light9_diff < match_delta }}"
 
-      scene_active: "{{ light1_match and (light2_match or not light2) }}"
-      any_on: "{{ light1_cur_state == 'on' or light2_cur_state == 'on' }}"
+      scene_active: >-
+        {{
+              (light1_match or not light1)
+          and (light2_match or not light2)
+          and (light3_match or not light3)
+          and (light4_match or not light4)
+          and (light5_match or not light5)
+          and (light6_match or not light6)
+          and (light7_match or not light7)
+          and (light8_match or not light8)
+          and (light9_match or not light9)
+        }}
+      any_on: >-
+        {{ 
+             light1_cur_state == 'on'
+          or light2_cur_state == 'on'
+          or light3_cur_state == 'on'
+          or light4_cur_state == 'on'
+          or light5_cur_state == 'on'
+          or light6_cur_state == 'on'
+          or light7_cur_state == 'on'
+          or light8_cur_state == 'on'
+          or light9_cur_state == 'on'
+        }}
 
   # initialize
   # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
@@ -272,8 +425,15 @@ action:
         conditions: >-
           {{
             (trigger.event and trigger.event.event_type == 'automation_reloaded')
-            or trigger.entity_id == light1 
+            or trigger.entity_id == light1
             or trigger.entity_id == light2
+            or trigger.entity_id == light3
+            or trigger.entity_id == light4
+            or trigger.entity_id == light5
+            or trigger.entity_id == light6
+            or trigger.entity_id == light7
+            or trigger.entity_id == light8
+            or trigger.entity_id == light9
           }}
         sequence:
           - choose:
@@ -366,16 +526,6 @@ action:
 
       # controller
 
-      - alias: 'Controller button pressed twice: Turn on full'
-        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed2x' }}"
-        sequence: 
-          - service: light.turn_on
-            data:
-              brightness_pct: 100
-            target: 
-              entity_id: 
-              - !input light1
-              - !input light2
 
       - alias: 'Controller button held, or once with scene not active: Turn off'
         conditions: >-
@@ -389,25 +539,49 @@ action:
             )
           }}
         sequence: 
-          - service: light.turn_off
-            target: 
-              entity_id:
-              - !input light1
-              - !input light2
+          - parallel:
+              - { service: light.turn_off, target: { entity_id: !input light1 } }
+              - { service: light.turn_off, target: { entity_id: !input light2 } }
+              - { service: light.turn_off, target: { entity_id: !input light3 } }
+              - { service: light.turn_off, target: { entity_id: !input light4 } }
+              - { service: light.turn_off, target: { entity_id: !input light5 } }
+              - { service: light.turn_off, target: { entity_id: !input light6 } }
+              - { service: light.turn_off, target: { entity_id: !input light7 } }
+              - { service: light.turn_off, target: { entity_id: !input light8 } }
+              - { service: light.turn_off, target: { entity_id: !input light9 } }
+
+      - alias: 'Controller button pressed twice: Turn on full'
+        conditions: >-
+          {{
+            trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button
+            and trigger.event.data.value == 'KeyPressed2x'
+          }}
+        sequence: 
+          - parallel:
+              - { service: light.turn_on, target: { entity_id: !input light1 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light2 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light3 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light4 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light5 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light6 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light7 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light8 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light9 }, data: { brightness_pct: 100 } }
 
       - alias: 'Controller button once: Activate scene'
-        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed' }}"
+        conditions: >-
+          {{
+            trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button
+            and trigger.event.data.value == 'KeyPressed'
+          }}
         sequence:
           - parallel:
-            - service: light.turn_on
-              target: 
-                entity_id:
-                - !input light1
-              data:
-                brightness_pct: !input light1_brightness
-            - service: light.turn_on
-              target: 
-                entity_id:
-                - !input light2
-              data:
-                brightness_pct: !input light2_brightness
+              - { service: light.turn_on, target: { entity_id: !input light1 }, data: { brightness_pct: !input light1_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light2 }, data: { brightness_pct: !input light2_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light3 }, data: { brightness_pct: !input light3_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light4 }, data: { brightness_pct: !input light4_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light5 }, data: { brightness_pct: !input light5_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light6 }, data: { brightness_pct: !input light6_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light7 }, data: { brightness_pct: !input light7_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light8 }, data: { brightness_pct: !input light8_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light9 }, data: { brightness_pct: !input light9_brightness } }
