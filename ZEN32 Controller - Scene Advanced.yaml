@@ -267,34 +267,6 @@ action:
         light2_match: {{ light2_match }}
 
   - choose:
-      # controller
-      - alias: Controller button pressed
-        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button }}"
-        sequence: 
-          - choose:
-              - alias: Controller button single press
-                conditions: "{{ trigger.event.data.value == 'KeyPressed' }}"
-                sequence:
-                  - service: light.turn_on
-                    target: 
-                      entity_id: !input light1
-
-              - alias: Controller button double press
-                conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}"
-                sequence:
-                  - service: light.turn_on
-                    data:
-                      brightness_pct: 100
-                    target: 
-                      entity_id: !input light1
-
-              - alias: Controller button held
-                conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}"
-                sequence:
-                  - service: light.turn_off
-                    target: 
-                      entity_id: !input light1
-
       # initializing, or light changed
       - alias: Light state changed
         conditions: >-
@@ -392,3 +364,38 @@ action:
                       target: 
                         device_id: !input device_id
 
+      # controller
+
+      - alias: 'Controller button pressed twice: Turn on full'
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed2x' }}"
+        sequence: 
+          - service: light.turn_on
+            data:
+              brightness_pct: 100
+            target: 
+              entity_id: !input light1
+
+      - alias: 'Controller button held, or once with scene not active: Turn off'
+        conditions: >-
+          {{
+            trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button 
+            and (
+              (
+                trigger.event.data.value == 'KeyPressed' and all_match
+              )
+              or trigger.event.data.value == 'KeyHeldDown'
+            )
+          }}
+        sequence: 
+          - service: light.turn_off
+            target: 
+              entity_id: !input light1
+
+      - alias: 'Controller button once: Activate scene'
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed' }}"
+        sequence:
+          - service: light.turn_on
+            target: 
+              entity_id: !input light1
+            data:
+              brightness_pct: !input light1_brightness
