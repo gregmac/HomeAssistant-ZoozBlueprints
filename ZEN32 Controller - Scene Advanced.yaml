@@ -229,19 +229,20 @@ action:
       all_match: "{{ light1_match and (light2_match or not light2) }}"
       any_on: "{{ light1_cur_state == 'on' or light2_cur_state == 'on' }}"
 
-  - choose:
-      # initialize
-      # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
-      - alias: Initialize 
-        conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
-        sequence:
-          - service: zwave_js.set_config_parameter
-            data:
-              parameter: 23                     # Enable / disable LED indicator for settings
-              value: 1                          # LED indicators don't flash if a setting is changed.
-            target: 
-              device_id: !input device_id
+  # initialize
+  # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  - if:
+      - condition: template
+        value_template: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+    then:
+      - service: zwave_js.set_config_parameter
+        data:
+          parameter: 23                     # Enable / disable LED indicator for settings
+          value: 1                          # LED indicators don't flash if a setting is changed.
+        target: 
+          device_id: !input device_id
 
+  - choose:
       # controller
       - alias: Controller button pressed
         conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button }}"
@@ -270,14 +271,13 @@ action:
                     target: 
                       entity_id: !input light1
 
-      # light changed
+      # initializing, or light changed
       - alias: Light state changed
         conditions: |
-          {{ 
-            (
-              trigger.entity_id == light1 
-              or trigger.entity_id == light2
-            )
+          {{
+            (trigger.event and trigger.event.event_type == 'automation_reloaded')
+            or trigger.entity_id == light1 
+            or trigger.entity_id == light2
           }}
         sequence:
           - service: logbook.log
