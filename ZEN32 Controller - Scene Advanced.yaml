@@ -304,7 +304,8 @@ action:
                 light2_match: {{ light2_match }}
 
           - choose:
-              - conditions: "{{ all_match and all_match_color == '-1' }}"
+              - alias: "All match, LED color = off"
+                conditions: "{{ all_match and all_match_color == '-1' }}"
                 sequence: 
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
@@ -313,7 +314,8 @@ action:
                       value: "{{ led_always_off }}"
                     target: 
                       device_id: !input device_id
-              - conditions: "{{ all_match }}"
+              - alias: "All match, LED color specified"
+                conditions: "{{ all_match }}"
                 sequence: 
                   - parallel: 
                       - alias: Set ZEN32 indicator LED color
@@ -331,7 +333,8 @@ action:
                         target: 
                           device_id: !input device_id
 
-              - conditions: "{{ any_match and partial_match_color == '-1' }}"
+              - alias: "Any match, LED color = off"
+                conditions: "{{ any_match and partial_match_color == '-1' }}"
                 sequence: 
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
@@ -340,7 +343,8 @@ action:
                       value: "{{ led_always_off }}"
                     target: 
                       device_id: !input device_id
-              - conditions: "{{ any_match }}"
+              - alias: "Any match, LED color specified"
+                conditions: "{{ any_match }}"
                 sequence:
                   - parallel: 
                       - alias: Set ZEN32 indicator LED color
@@ -358,7 +362,8 @@ action:
                         target: 
                           device_id: !input device_id
 
-              - conditions: "{{ no_match_color == '-1'}}"
+              - alias: "No match, LED color = off"
+                conditions: "{{ no_match_color == '-1'}}"
                 sequence:
                   - alias: Turn off ZEN32 indicator LED
                     service: zwave_js.set_config_parameter 
@@ -367,21 +372,22 @@ action:
                       value: "{{ led_always_off }}"
                     target: 
                       device_id: !input device_id
-
-            default:
-              - parallel: 
-                - alias: Set ZEN32 indicator LED color
-                  service: zwave_js.set_config_parameter 
-                  data:
-                    parameter: "{{ led_indicator_color_param }}"
-                    value: !input no_match_color
-                  target: 
-                    device_id: !input device_id
-                - alias: Turn on ZEN32 indicator LED
-                  service: zwave_js.set_config_parameter 
-                  data:
-                    parameter: "{{ led_indicator_mode_param }}"
-                    value: "{{ led_always_on }}"
-                  target: 
-                    device_id: !input device_id
+              - alias: "No match, LED color specified"
+                conditions: "{{ true }}"
+                sequence:
+                  - parallel: 
+                    - alias: Set ZEN32 indicator LED color
+                      service: zwave_js.set_config_parameter 
+                      data:
+                        parameter: "{{ led_indicator_color_param }}"
+                        value: !input no_match_color
+                      target: 
+                        device_id: !input device_id
+                    - alias: Turn on ZEN32 indicator LED
+                      service: zwave_js.set_config_parameter 
+                      data:
+                        parameter: "{{ led_indicator_mode_param }}"
+                        value: "{{ led_always_on }}"
+                      target: 
+                        device_id: !input device_id
 
