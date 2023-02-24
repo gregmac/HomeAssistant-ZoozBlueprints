@@ -1,0 +1,245 @@
+blueprint:
+  name: "Zooz ZEN32 Scene Controller: Custom Scene Control"
+  description: >
+    Link a Zooz ZEN32 Scene Controller button to a custom scene.
+
+
+    Due to HomeAssistant limitations with scenes, an enity must be picked to show status
+    of the scene. The best choice is to create a group that contains all the entities
+    in the scene and use that.
+
+
+  domain: automation
+  input:
+    device_id:
+      name: Zooz Switch
+      description: List of available Zooz ZEN32 switches.
+      selector:
+        device:
+          integration: zwave_js
+          manufacturer: Zooz
+          model: ZEN32
+    scene_button:
+      name: Scene Button
+      description: The button to link to light
+      default: '001'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: Scene 5 (Big Button)
+              value: '005'
+            - label: Scene 1 (Top Left)
+              value: '001'
+            - label: Scene 2 (Top Right)
+              value: '002'
+            - label: Scene 3 (Bottom Left)
+              value: '003'
+            - label: Scene 4 (Bottom Right)
+              value: '004'
+
+    light1:
+      name: Light 1
+      selector:
+        entity: 
+          domain: light
+    light1_brightness:
+      name: Light 1 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+
+    light2:
+      name: Light 2
+      default: []
+      selector:
+        entity: 
+          domain: light
+    light2_brightness:
+      name: Light 2 Brightness
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+
+    # light3:
+    #   name: Light 3
+    #   default: []
+    #   selector:
+    #     entity: 
+    #       domain: light
+    # light3_brightness:
+    #   name: Light 3 Brightness
+    #   default: 100
+    #   selector:
+    #     number:
+    #       min: 0
+    #       max: 100
+    #       unit_of_measurement: '%'
+
+    # light4:
+    #   name: Light 4
+    #   default: []
+    #   selector:
+    #     entity: 
+    #       domain: light
+    # light4_brightness:
+    #   name: Light 4 Brightness
+    #   default: 100
+    #   selector:
+    #     number:
+    #       min: 0
+    #       max: 100
+    #       unit_of_measurement: '%'
+
+    on_delta:
+      name: Delta
+      description: What % current brightness has to be within desired to be considered "on"
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+
+
+mode: restart
+max_exceeded: silent
+
+variables:
+  # minimum value to consider light as "full" brightness
+  full_brightness: 250
+
+  # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  led_always_off: 2
+  led_always_on: 3
+
+  # entities
+  device_id: !input device_id
+  scene_button: !input scene_button
+  on_delta: !input on_delta
+
+  light1: !input light1
+  light2: !input light2
+  light1_brightness: !input light1_brightness
+  light2_brightness: !input light2_brightness
+
+  # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
+  led_indicator_color_param: "{{ ((scene_button | int) % 5) + 6 }}" # '005' => 6, '001' => 7, '002' => 8, '003' => 9, '004' => 10
+
+
+trigger:
+  # controller trigger (set light)
+  - platform: event
+    event_type: zwave_js_value_notification
+    event_data:
+      command_class_name: Central Scene
+      device_id: !input device_id
+
+  # light state changed
+  - platform: state
+    entity_id: !input light1
+  - platform: state
+    entity_id: !input light2
+
+  # used for initialization
+  - platform: event
+    event_type: automation_reloaded
+
+action:
+  - variables:
+      light1_cur_state: "{{ states(light1) }}"
+      light2_cur_state: "{{ states(light2) }}"
+
+      light1_cur_brightness: "{{ (state_attr(light1, 'brightness')|int(light1_brightness*2.55)|round) if light1_cur_state == 'on' else 0 }}"
+      light2_cur_brightness: "{{ (state_attr(light2|default(''), 'brightness')|int(light2_brightness*2.55)|round) if light2_cur_state == 'on' else 0 }}"
+
+      light1_diff: "{{ ((light1_brightness*2.55) - light1_cur_brightness) | abs | round }}"
+      light2_diff: "{{ ((light2_brightness*2.55) - light2_cur_brightness) | abs | round }}"
+
+      light1_on: "{{ light1_diff < on_delta }}"
+      light2_on: "{{ light2_diff < on_delta }}"
+
+      all_on: "{{ light1_on and light2_on }}"
+      any_on: "{{ light1_on or  light2_on }}"
+
+  - choose:
+      # initialize
+      # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+      - alias: Initialize 
+        conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+        sequence:
+          - service: zwave_js.set_config_parameter
+            data:
+              parameter: 23                     # Enable / disable LED indicator for settings
+              value: 1                          # LED indicators don't flash if a setting is changed.
+            target: 
+              device_id: !input device_id
+
+      # controller
+      - alias: Controller button pressed
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button }}"
+        sequence: 
+          - choose:
+              - alias: Controller button single press
+                conditions: "{{ trigger.event.data.value == 'KeyPressed' }}"
+                sequence:
+                  - service: light.turn_on
+                    target: 
+                      entity_id: !input light1
+
+              - alias: Controller button double press
+                conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      brightness_pct: 100
+                    target: 
+                      entity_id: !input light1
+
+              - alias: Controller button held
+                conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}"
+                sequence:
+                  - service: light.turn_off
+                    target: 
+                      entity_id: !input light1
+
+
+      # light changed
+      - alias: Light state changed
+        conditions: |
+          {{ 
+            (
+              trigger.entity_id == light1 
+              or trigger.entity_id == light2
+            )
+          }}
+        sequence:
+          - service: logbook.log
+            data:
+              name: AutomationTest
+              message: |
+                trigger.entity_id: {{ trigger.entity_id }}
+
+                all_on: {{ all_on }}
+                any_on: {{ any_on }}
+
+                light1: {{ light1 }}
+                light1_brightness: {{ light1_brightness * 2.55 }}
+                light1_cur_state: {{ light1_cur_state }}
+                light1_cur_brightness: {{ light1_cur_brightness }}
+                light1_diff: {{ light1_diff }}
+                light1_on: {{ light1_on }}
+
+                light2: {{ light2 }}
+                light2_brightness: {{ light2_brightness * 2.55}}
+                light2_cur_state: {{ light2_cur_state }}
+                light2_cur_brightness: {{ light2_cur_brightness }}
+                light2_diff: {{ light2_diff }}
+                light2_on: {{ light2_on }}
