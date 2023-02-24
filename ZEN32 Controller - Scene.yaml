@@ -152,45 +152,29 @@ action:
         conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button }}"
         sequence: 
           - choose:
-              - alias: Controller button single press
-                conditions: "{{ trigger.event.data.value == 'KeyPressed' }}"
-                sequence:
-                  - if:
-                      - condition: template
-                        value_template: "{{ states(status_entity) == 'on' }}"
-                    then:
-                      - service: light.turn_off
-                        target: 
-                          entity_id: !input status_entity
-                      - service: switch.turn_off
-                        target: 
-                          entity_id: !input status_entity
-                    else:
-                      - service: scene.turn_on
-                        target: 
-                          entity_id: !input scene_name
-
-              - alias: Controller button double press
+              - alias: "Controller button double press: turn on 100%"
                 conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}"
                 sequence:
-                  - service: light.turn_on
-                    data:
-                      brightness_pct: 100
-                    target: 
-                      entity_id: !input status_entity
-                  - service: switch.turn_on
-                    target: 
-                      entity_id: !input status_entity
+                  - { service: light.turn_on,  target: { entity_id: !input status_entity }, data: { brightness_pct: 100 } }
+                  - { service: switch.turn_on, target: { entity_id: !input status_entity } }
 
-              - alias: Controller button held
-                conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}"
+              - alias: "Controller button held, or keypressed when on: turn off"
+                conditions: |
+                  {{
+                    trigger.event.data.value == 'KeyHeldDown' 
+                    or (
+                      trigger.event.data.value == 'KeyPressed'
+                      and states(status_entity) == 'on'
+                    )
+                  }}
                 sequence:
-                  - service: light.turn_off
-                    target: 
-                      entity_id: !input status_entity
-                  - service: switch.turn_off
-                    target: 
-                      entity_id: !input status_entity
+                  - { service: light.turn_off,  target: { entity_id: !input status_entity } }
+                  - { service: switch.turn_off, target: { entity_id: !input status_entity } }
+
+              - alias: "Controller button single press: activate scene"
+                conditions: "{{ trigger.event.data.value == 'KeyPressed' and states(status_entity) != 'on' }}"
+                sequence:
+                  - { service: scene.turn_on, target: { entity_id: !input scene_name } }
 
       # light changed
       - alias: Light turned on/changed to less than full brightness
@@ -199,43 +183,28 @@ action:
           - parallel: 
               - alias: Set ZEN32 indicator LED color
                 service: zwave_js.set_config_parameter 
-                data:
-                  parameter: "{{ led_indicator_color_param }}"
-                  value: !input dimmed_color
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_color_param }}", value: !input dimmed_color } 
               - alias: Turn on ZEN32 indicator LED
                 service: zwave_js.set_config_parameter 
-                data:
-                  parameter: "{{ led_indicator_mode_param }}"
-                  value: "{{ led_always_on }}"
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
       - alias: Light turned on/changed to full brightness
         conditions: "{{ trigger.entity_id == status_entity and trigger.to_state.state == 'on' }}"
         sequence: 
           - alias: Turn off ZEN32 indicator LED
             service: zwave_js.set_config_parameter 
-            data:
-              parameter: "{{ led_indicator_mode_param }}"
-              value: "{{ led_always_off }}"
-            target: 
-              device_id: !input device_id
+            target: { device_id: !input device_id }
+            data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
       - alias: Light turned off
         conditions: "{{ trigger.entity_id == status_entity and trigger.to_state.state == 'off' }}"
         sequence:
           - parallel: 
               - alias: Set ZEN32 indicator LED color
                 service: zwave_js.set_config_parameter 
-                data:
-                  parameter: "{{ led_indicator_color_param }}"
-                  value: !input off_color
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: { "{{ led_indicator_color_param }}", value: !input off_color } }
               - alias: Turn on ZEN32 indicator LED
                 service: zwave_js.set_config_parameter 
-                data:
-                  parameter: "{{ led_indicator_mode_param }}"
-                  value: "{{ led_always_on }}"
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }

@@ -33,95 +33,13 @@ blueprint:
             - label: Physical switch/button control disabled (control via Z-Wave only)
               value: '0'
 
-    button_1_1x:
-      name: Input S1 press 1x
-      description: |
-        Action to run when the button is pressed one time.
-        Default: Turn on Relay 1 load.
-      default: []
-      selector:
-        action: {}
-    button_1_2x:
-      name: Input S1 press 2x
-      description: Action to run when the button is pressed two times.
-      default: []
-      selector:
-        action: {}
-    button_1_3x:
-      name: Input S1 press 3x
-      description: Action to run when the button is pressed three times.
-      default: []
-      selector:
-        action: {}
-    button_1_4x:
-      name: Input S1 press 4x
-      description: Action to runwhen the button is pressed four times.
-      default: []
-      selector:
-        action: {}
-    button_1_5x:
-      name: Input S1 press 5x
-      description: Action to run on when the button is pressed five times.
-      default: []
-      selector:
-        action: {}
-    button_1_hold:
-      name: Input S1 hold
-      description: Action to run when the button is held.
-      default: []
-      selector:
-        action: {}
-    button_1_release:
-      name: Input S1 release
-      description: Action to run on upper paddle release.
-      default: []
-      selector:
-        action: {}
-
-    button_2_1x:
-      name: Input S2 press 1x
-      description: |
-        Action to run when the button is pressed one time.
-        Default: Turn off Relay2 switch load.
-      default: []
-      selector:
-        action: {}
-    button_2_2x:
-      name: Input S2 press 2x
-      description: Action to run when the button is pressed two times.
-      default: []
-      selector:
-        action: {}
-    button_2_3x:
-      name: Input S2 press 3x
-      description: Action to run when the button is pressed three times.
-      default: []
-      selector:
-        action: {}
-    button_2_4x:
-      name: Input S2 press 4x
-      description: Action to runwhen the button is pressed four times.
-      default: []
-      selector:
-        action: {}
-    button_2_5x:
-      name: Input S2 press 5x
-      description: Action to run on when the button is pressed five times.
-      default: []
-      selector:
-        action: {}
-    button_2_hold:
-      name: Input S2 Hold
-      description: Action to run when the button is held.
-      default: []
-      selector:
-        action: {}
-    button_2_release:
-      name: Bottom Paddle Release
-      description: Action to run when the button is released.
-      default: []
-      selector:
-        action: {}
+    button_1_1x:      { name: "Input (S) press 1x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed one times. Default: Turn on Relay load." }
+    button_1_2x:      { name: "Input (S) press 2x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed two times." }
+    button_1_3x:      { name: "Input (S) press 3x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times." }
+    button_1_4x:      { name: "Input (S) press 4x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed four times." }
+    button_1_5x:      { name: "Input (S) press 5x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed five times." }
+    button_1_hold:    { name: "Input (S) hold",     default: [], selector: { action: {} }, description: "Action to run when the button is held." }
+    button_1_release: { name: "Input (S) release",  default: [], selector: { action: {} }, description: "Action to run when the button is released." }
 
 mode: restart
 max_exceeded: silent
@@ -170,34 +88,10 @@ action:
       - conditions: "{{ scene_id == 'Scene 001' }}"
         sequence:
           - choose:
-              - conditions: "{{ event_action == 'KeyPressed' }}"
-                sequence: !input button_1_1x
-              - conditions: "{{ event_action == 'KeyPressed2x' }}"
-                sequence: !input button_1_2x
-              - conditions: "{{ event_action == 'KeyPressed3x' }}"
-                sequence: !input button_1_3x
-              - conditions: "{{ event_action == 'KeyPressed4x' }}"
-                sequence: !input button_1_4x
-              - conditions: "{{ event_action == 'KeyPressed5x' }}"
-                sequence: !input button_1_5x
-              - conditions: "{{ event_action == 'KeyHeldDown' }}"
-                sequence: !input button_1_hold
-              - conditions: "{{ event_action == 'KeyReleased' }}"
-                sequence: !input button_1_release
-      - conditions: "{{ scene_id == 'Scene 002' }}"
-        sequence: 
-          - choose:
-              - conditions: "{{ event_action == 'KeyPressed' }}"
-                sequence: !input button_2_1x
-              - conditions: "{{ event_action == 'KeyPressed2x' }}"
-                sequence: !input button_2_2x
-              - conditions: "{{ event_action == 'KeyPressed3x' }}"
-                sequence: !input button_2_3x
-              - conditions: "{{ event_action == 'KeyPressed4x' }}"
-                sequence: !input button_2_4x
-              - conditions: "{{ event_action == 'KeyPressed5x' }}"
-                sequence: !input button_2_5x
-              - conditions: "{{ event_action == 'KeyHeldDown' }}"
-                sequence: !input button_2_hold
-              - conditions: "{{ event_action == 'KeyReleased' }}"
-                sequence: !input button_2_release
+              - { conditions: "{{ event_action == 'KeyPressed' }}",   sequence: !input button_1_1x }
+              - { conditions: "{{ event_action == 'KeyPressed2x' }}", sequence: !input button_1_2x }
+              - { conditions: "{{ event_action == 'KeyPressed3x' }}", sequence: !input button_1_3x }
+              - { conditions: "{{ event_action == 'KeyPressed4x' }}", sequence: !input button_1_4x }
+              - { conditions: "{{ event_action == 'KeyPressed5x' }}", sequence: !input button_1_5x }
+              - { conditions: "{{ event_action == 'KeyHeldDown' }}",  sequence: !input button_1_hold }
+              - { conditions: "{{ event_action == 'KeyReleased' }}",  sequence: !input button_1_release }

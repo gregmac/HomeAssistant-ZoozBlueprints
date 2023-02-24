@@ -33,99 +33,21 @@ blueprint:
             - label: Physical paddle control disabled (control via Z-Wave only)
               value: '0'
 
-    button_1_1x:
-      name: Paddle Up press 1x
-      description: |
-        Action to run when the button is pressed one time.
-        Default: Turn on switch load.
-      default: []
-      selector:
-        action: {}
-    button_1_2x:
-      name: Paddle Up press 2x
-      description: Action to run when the button is pressed two times.
-      default: []
-      selector:
-        action: {}
-    button_1_3x:
-      name: Paddle Up press 3x
-      description: |
-        Action to run when the button is pressed three times.
-        Default: Enter inclusion/pairing mode.
-      default: []
-      selector:
-        action: {}
-    button_1_4x:
-      name: Paddle Up press 4x
-      description: Action to runwhen the button is pressed four times.
-      default: []
-      selector:
-        action: {}
-    button_1_5x:
-      name: Paddle Up press 5x
-      description: Action to run on when the button is pressed five times.
-      default: []
-      selector:
-        action: {}
-    button_1_hold:
-      name: Paddle Up Hold
-      description: Action to run when the button is held.
-      default: []
-      selector:
-        action: {}
-    button_1_release:
-      name: Paddle Up Release
-      description: Action to run when the button is released.
-      default: []
-      selector:
-        action: {}
-
-    button_2_1x:
-      name: Paddle Down press 1x
-      description: |
-        Action to run when the button is pressed one time.
-        Default: Turn off dimmer switch load.
-      default: []
-      selector:
-        action: {}
-    button_2_2x:
-      name: Paddle Down press 2x
-      description: Action to run when the button is pressed two times.
-      default: []
-      selector:
-        action: {}
-    button_2_3x:
-      name: Paddle Down press 3x
-      description: |
-        Action to run when the button is pressed three times.
-        Default: Enter exclusion/un-pairing mode.
-      default: []
-      selector:
-        action: {}
-    button_2_4x:
-      name: Paddle Down press 4x
-      description: Action to runwhen the button is pressed four times.
-      default: []
-      selector:
-        action: {}
-    button_2_5x:
-      name: Paddle Down press 5x
-      description: Action to run on when the button is pressed five times.
-      default: []
-      selector:
-        action: {}
-    button_2_hold:
-      name: Paddle Down Hold
-      description: Action to run when the button is held.
-      default: []
-      selector:
-        action: {}
-    button_2_release:
-      name: Paddle Down Release
-      description: Action to run when the button is released.
-      default: []
-      selector:
-        action: {}
+    button_1_1x:      { name: "Paddle Up press 1x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed one time. Default: Turn on switch load." }
+    button_1_2x:      { name: "Paddle Up press 2x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed two times." }
+    button_1_3x:      { name: "Paddle Up press 3x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times." }
+    button_1_4x:      { name: "Paddle Up press 4x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed four times." }
+    button_1_5x:      { name: "Paddle Up press 5x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed five times." }
+    button_1_hold:    { name: "Paddle Up hold",       default: [], selector: { action: {} }, description: "Action to run when the button is held." }
+    button_1_release: { name: "Paddle Up release",    default: [], selector: { action: {} }, description: "Action to run when the button is released." }
+    
+    button_2_1x:      { name: "Paddle Down press 1x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed one time. Default: Turn on switch load." }
+    button_2_2x:      { name: "Paddle Down press 2x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed two times." }
+    button_2_3x:      { name: "Paddle Down press 3x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times." }
+    button_2_4x:      { name: "Paddle Down press 4x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed four times." }
+    button_2_5x:      { name: "Paddle Down press 5x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed five times." }
+    button_2_hold:    { name: "Paddle Down hold",     default: [], selector: { action: {} }, description: "Action to run when the button is held." }
+    button_2_release: { name: "Paddle Down release",  default: [], selector: { action: {} }, description: "Action to run when the button is released." }
 
 mode: restart
 max_exceeded: silent
@@ -151,56 +73,38 @@ action:
       # docs: https://www.support.getzooz.com/kb/article/549-zen76-s2-on-off-switch-700-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
+
           # enable scene control
           - service: zwave_js.set_config_parameter
-            data:
-              parameter: 10
-              value: 1
-            target: 
-              device_id: !input device_id
+            target: { device_id: !input device_id }
+            data: { parameter: 10, value: 1 }
+
           # setup local control
           - if:
               - condition: template
                 value_template: "{{ '!input local_control' != 'undefined' }}"
             then:
               - service: zwave_js.set_config_parameter
-                data:
-                  parameter: 12
-                  value: !input local_control
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: 12, value: !input local_control }
 
       - conditions: "{{ scene_id == 'Scene 001' }}"
         sequence:
           - choose:
-              - conditions: "{{ event_action == 'KeyPressed' }}"
-                sequence: !input button_1_1x
-              - conditions: "{{ event_action == 'KeyPressed2x' }}"
-                sequence: !input button_1_2x
-              - conditions: "{{ event_action == 'KeyPressed3x' }}"
-                sequence: !input button_1_3x
-              - conditions: "{{ event_action == 'KeyPressed4x' }}"
-                sequence: !input button_1_4x
-              - conditions: "{{ event_action == 'KeyPressed5x' }}"
-                sequence: !input button_1_5x
-              - conditions: "{{ event_action == 'KeyHeldDown' }}"
-                sequence: !input button_1_hold
-              - conditions: "{{ event_action == 'KeyReleased' }}"
-                sequence: !input button_1_release
+              - { conditions: "{{ event_action == 'KeyPressed' }}",   sequence: !input button_1_1x }
+              - { conditions: "{{ event_action == 'KeyPressed2x' }}", sequence: !input button_1_2x }
+              - { conditions: "{{ event_action == 'KeyPressed3x' }}", sequence: !input button_1_3x }
+              - { conditions: "{{ event_action == 'KeyPressed4x' }}", sequence: !input button_1_4x }
+              - { conditions: "{{ event_action == 'KeyPressed5x' }}", sequence: !input button_1_5x }
+              - { conditions: "{{ event_action == 'KeyHeldDown' }}",  sequence: !input button_1_hold }
+              - { conditions: "{{ event_action == 'KeyReleased' }}",  sequence: !input button_1_release }
       - conditions: "{{ scene_id == 'Scene 002' }}"
-        sequence: 
+        sequence:
           - choose:
-              - conditions: "{{ event_action == 'KeyPressed' }}"
-                sequence: !input button_2_1x
-              - conditions: "{{ event_action == 'KeyPressed2x' }}"
-                sequence: !input button_2_2x
-              - conditions: "{{ event_action == 'KeyPressed3x' }}"
-                sequence: !input button_2_3x
-              - conditions: "{{ event_action == 'KeyPressed4x' }}"
-                sequence: !input button_2_4x
-              - conditions: "{{ event_action == 'KeyPressed5x' }}"
-                sequence: !input button_2_5x
-              - conditions: "{{ event_action == 'KeyHeldDown' }}"
-                sequence: !input button_2_hold
-              - conditions: "{{ event_action == 'KeyReleased' }}"
-                sequence: !input button_2_release
+              - { conditions: "{{ event_action == 'KeyPressed' }}",   sequence: !input button_2_1x }
+              - { conditions: "{{ event_action == 'KeyPressed2x' }}", sequence: !input button_2_2x }
+              - { conditions: "{{ event_action == 'KeyPressed3x' }}", sequence: !input button_2_3x }
+              - { conditions: "{{ event_action == 'KeyPressed4x' }}", sequence: !input button_2_4x }
+              - { conditions: "{{ event_action == 'KeyPressed5x' }}", sequence: !input button_2_5x }
+              - { conditions: "{{ event_action == 'KeyHeldDown' }}",  sequence: !input button_2_hold }
+              - { conditions: "{{ event_action == 'KeyReleased' }}",  sequence: !input button_2_release }

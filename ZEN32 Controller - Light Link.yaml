@@ -191,31 +191,28 @@ action:
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
           - service: zwave_js.set_config_parameter
+            target: { device_id: !input device_id } 
             data:
               parameter: 23                     # Enable / disable LED indicator for settings
               value: 1                          # LED indicators don't flash if a setting is changed.
-            target: 
-              device_id: !input device_id
           - if:
               - condition: template
                 value_template: "{{ local_control != 'undefined' }}"
             then:
               - service: zwave_js.set_config_parameter
+                target: { device_id: !input device_id } 
                 data:
                   parameter: 19                 # Local control mode
                   value: !input local_control   # directly set from dropdown
-                target: 
-                  device_id: !input device_id
           - if:
               - condition: template
                 value_template: "{{ led_mode != 'undefined' }}"
             then:
               - service: zwave_js.set_config_parameter
+                target: { device_id: !input device_id } 
                 data:
                   parameter: 1                  # LED indicator mode for relay button
                   value: !input led_mode        # directly set from dropdown
-                target: 
-                  device_id: !input device_id
 
       # controller
       - alias: Controller button pressed
@@ -225,36 +222,20 @@ action:
               - alias: Controller button single press
                 conditions: "{{ trigger.event.data.value == 'KeyPressed' }}"
                 sequence:
-                  - service: light.toggle
-                    data: {}
-                    target: 
-                      entity_id: !input target_light
-                  - service: switch.toggle
-                    data: {}
-                    target: 
-                      entity_id: !input target_light
+                  - { service: light.toggle,  target: { entity_id: !input target_light } }
+                  - { service: switch.toggle, target: { entity_id: !input target_light } }
+
               - alias: Controller button double press
                 conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}"
                 sequence:
-                  - service: light.turn_on
-                    data:
-                      brightness_pct: 100
-                    target: 
-                      entity_id: !input target_light
-                  - service: switch.turn_on
-                    target: 
-                      entity_id: !input target_light
+                  - { service: light.turn_on,  target: { entity_id: !input target_light } , data: { brightness_pct: 100 } }
+                  - { service: switch.turn_on, target: { entity_id: !input target_light } }
+
               - alias: Controller button held
                 conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}"
                 sequence:
-                  - service: light.turn_on
-                    data:
-                      brightness_pct: !input night_light_brightness
-                    target: 
-                      entity_id: !input target_light
-                  - service: switch.turn_off
-                    target: 
-                      entity_id: !input target_light
+                  - { service: light.turn_on,   target: { entity_id: !input target_light } , data: { brightness_pct: !input night_light_brightness } }
+                  - { service: switch.turn_off, target: { entity_id: !input target_light } }
 
       # light changed
       - alias: Light turned on/changed to less than full brightness
@@ -263,43 +244,30 @@ action:
           - parallel: 
               - alias: Set ZEN32 indicator LED color
                 service: zwave_js.set_config_parameter 
-                data:
-                  parameter: "{{ led_indicator_color_param }}"
-                  value: !input dimmed_color
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_color_param }}", value: !input dimmed_color }
               - alias: Turn on ZEN32 indicator LED
                 service: zwave_js.set_config_parameter 
-                data:
-                  parameter: "{{ led_indicator_mode_param }}"
-                  value: "{{ led_always_on }}"
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
+
       - alias: Light turned on/changed to full brightness
         conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'on' }}"
         sequence: 
           - alias: Turn off ZEN32 indicator LED
             service: zwave_js.set_config_parameter 
-            data:
-              parameter: "{{ led_indicator_mode_param }}"
-              value: "{{ led_always_off }}"
-            target: 
-              device_id: !input device_id
+            target: { device_id: !input device_id }
+            data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
+
       - alias: Light turned off
         conditions: "{{ trigger.entity_id == target_light and trigger.to_state.state == 'off' }}"
         sequence:
           - parallel: 
               - alias: Set ZEN32 indicator LED color
                 service: zwave_js.set_config_parameter 
-                data:
-                  parameter: "{{ led_indicator_color_param }}"
-                  value: !input off_color
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_color_param }}", value: !input off_color }
               - alias: Turn on ZEN32 indicator LED
                 service: zwave_js.set_config_parameter 
-                data:
-                  parameter: "{{ led_indicator_mode_param }}"
-                  value: "{{ led_always_on }}"
-                target: 
-                  device_id: !input device_id
+                target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
