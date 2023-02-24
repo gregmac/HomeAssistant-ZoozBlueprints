@@ -214,20 +214,20 @@ trigger:
 
 action:
   - variables:
-      light1_cur_state: "{{ states(light1) }}"
-      light2_cur_state: "{{ states(light2) }}"
+      light1_cur_state: "{%- if light1 -%}{{ states(light1) }}{%- endif -%}"
+      light2_cur_state: "{%- if light2 -%}{{ states(light2) }}{%- endif -%}"
 
-      light1_cur_brightness: "{{ (state_attr(light1, 'brightness')|int(light1_brightness*2.55)|round) if light1_cur_state == 'on' else 0 }}"
-      light2_cur_brightness: "{{ (state_attr(light2|default(''), 'brightness')|int(light2_brightness*2.55)|round) if light2_cur_state == 'on' else 0 }}"
+      light1_cur_brightness: "{%- if light1 -%}{{ (((state_attr(light1, 'brightness')|int(light1_brightness*2.55))/2.55)|round) if light1_cur_state == 'on' else 0 }}{%- endif -%}"
+      light2_cur_brightness: "{%- if light2 -%}{{ (((state_attr(light2, 'brightness')|int(light2_brightness*2.55))/2.55)|round) if light2_cur_state == 'on' else 0 }}{%- endif -%}"
 
-      light1_diff: "{{ ((light1_brightness*2.55) - light1_cur_brightness) | abs | round }}"
-      light2_diff: "{{ ((light2_brightness*2.55) - light2_cur_brightness) | abs | round }}"
+      light1_diff: "{{ (light1_brightness - light1_cur_brightness|int(999)) | abs | round }}"
+      light2_diff: "{{ (light2_brightness - light2_cur_brightness|int(999)) | abs | round }}"
 
       light1_match: "{{ light1_diff < match_delta }}"
       light2_match: "{{ light2_diff < match_delta }}"
 
-      all_match: "{{ light1_match and light2_match }}"
-      any_match: "{{ light1_match or  light2_match }}"
+      all_match: "{{ light1_match and (light2_match or not light2) }}"
+      any_match: "{{ light1_match or  (light2_match and    light2) }}"
 
   - choose:
       # initialize
@@ -290,14 +290,14 @@ action:
                 any_match: {{ any_match }}
 
                 light1: {{ light1 }}
-                light1_brightness: {{ light1_brightness * 2.55 }}
+                light1_brightness: {{ light1_brightness }}
                 light1_cur_state: {{ light1_cur_state }}
                 light1_cur_brightness: {{ light1_cur_brightness }}
                 light1_diff: {{ light1_diff }}
                 light1_match: {{ light1_match }}
 
                 light2: {{ light2 }}
-                light2_brightness: {{ light2_brightness * 2.55}}
+                light2_brightness: {{ light2_brightness }}
                 light2_cur_state: {{ light2_cur_state }}
                 light2_cur_brightness: {{ light2_cur_brightness }}
                 light2_diff: {{ light2_diff }}
