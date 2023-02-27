@@ -49,7 +49,7 @@ blueprint:
     button_2_hold:    { name: "Paddle Down hold",     default: [], selector: { action: {} }, description: "Action to run when the button is held." }
     button_2_release: { name: "Paddle Down release",  default: [], selector: { action: {} }, description: "Action to run when the button is released." }
 
-mode: restart
+mode: parallel
 max_exceeded: silent
 
 trigger:

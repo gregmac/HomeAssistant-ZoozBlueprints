@@ -71,7 +71,7 @@ blueprint:
     button_4_hold:    {name: Scene 4 (Bottom Right) hold,     default: [], selector: {action: {}}, description: Action to run when the button is held.}
     button_4_release: {name: Scene 4 (Bottom Right) release,  default: [], selector: {action: {}}, description: Action to run when the button is released.}
 
-mode: restart
+mode: parallel
 max_exceeded: silent
 
 variables: 

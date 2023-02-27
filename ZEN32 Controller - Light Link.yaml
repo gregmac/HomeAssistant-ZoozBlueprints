@@ -146,7 +146,7 @@ blueprint:
             - label: LED always on
               value: '3'
 
-mode: restart
+mode: parallel
 max_exceeded: silent
 
 variables:

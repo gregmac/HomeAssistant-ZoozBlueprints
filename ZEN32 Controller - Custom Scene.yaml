@@ -159,7 +159,7 @@ blueprint:
           unit_of_measurement: '%'
 
 
-mode: restart
+mode: parallel
 max_exceeded: silent
 
 variables:

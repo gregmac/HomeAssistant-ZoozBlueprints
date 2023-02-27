@@ -41,7 +41,7 @@ blueprint:
     button_1_hold:    { name: "Input (S) hold",     default: [], selector: { action: {} }, description: "Action to run when the button is held." }
     button_1_release: { name: "Input (S) release",  default: [], selector: { action: {} }, description: "Action to run when the button is released." }
 
-mode: restart
+mode: parallel
 max_exceeded: silent
 
 trigger:
