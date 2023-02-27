@@ -8,8 +8,8 @@ blueprint:
   #   can't be used for what this automation does
   #
   description: >
-    Link a Zooz ZEN32 Scene Controller button to a custom scene. Supports one or more lights (all light
-    inputs are optional). 
+    Link a Zooz ZEN32 Scene Controller button to a custom scene, specified in the automation.
+    Supports up to 9 lights (all light inputs are optional). 
 
 
     * Press button once to activate the scene. If the scene is already active, it is turned off.
@@ -20,10 +20,14 @@ blueprint:
 
 
     The Scene Controller LED indicator indicates the state of the scene: scene active, some lights on, or all
-    lights off. This works regardless of if the lights were controlled using the button or not.
+    lights off. This state is based on the lights themselves, regardless of how they got into that state.
 
 
-    Running the automation manually also actives the scene.
+    Other features:
+
+    * Manually triggering the automation activates the scene (a convenient way to use the scene from other places)
+
+    * LED indicator colors can be customized
 
   domain: automation
   input:
