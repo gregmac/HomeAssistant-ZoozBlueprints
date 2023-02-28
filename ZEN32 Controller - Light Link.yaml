@@ -192,6 +192,7 @@ action:
         sequence:
           - alias: "zwavejs: Don't flash indicators. Requires Firmware 10.20+"
             service: zwave_js.set_config_parameter
+            continue_on_error: true # avoid failure for older firmware
             target: { device_id: !input device_id } 
             data: { parameter: 23, value: 1 }
           - if:
