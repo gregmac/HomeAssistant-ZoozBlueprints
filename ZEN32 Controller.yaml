@@ -116,8 +116,8 @@ max_exceeded: silent
 
 variables: 
   # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
-  led_always_off: 2
-  led_always_on: 3
+  const_led_always_off: 2
+  const_led_always_on: 3
 
   # # local control (if via zwave)
   local_control: !input local_control
@@ -187,7 +187,7 @@ action:
         target: { entity_id: !input local_switch }
 
   - choose:
-      - alias: "Reloaded, or switch changed"
+      - alias: "Initializing, or switch state changed"
         conditions: |
           {{
             local_control_via_zwave
@@ -197,19 +197,10 @@ action:
             )
           }}
         sequence:
-          - if:
-              - condition: template
-                value_template: "{{ local_switch_cur_state == 'on' }}"
-            then:
-              - alias: Turn on ZEN32 indicator LED
-                service: zwave_js.set_config_parameter 
-                target: { device_id: !input device_id }
-                data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
-            else:
-              - alias: Turn off ZEN32 indicator LED
-                service: zwave_js.set_config_parameter 
-                target: { device_id: !input device_id }
-                data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
+          - alias: Set ZEN32 indicator LED state
+            service: zwave_js.set_config_parameter 
+            target: { device_id: !input device_id }
+            data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ const_led_always_on if  local_switch_cur_state == 'on' else const_led_always_off }}" }
 
       - conditions: "{{ trigger.event.data.label == 'Scene 005' }}"
         sequence: 

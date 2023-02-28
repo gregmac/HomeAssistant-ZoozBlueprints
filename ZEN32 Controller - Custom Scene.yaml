@@ -164,12 +164,9 @@ mode: parallel
 max_exceeded: silent
 
 variables:
-  # minimum value to consider light as "full" brightness
-  full_brightness: 250
-
   # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
-  led_always_off: 2
-  led_always_on: 3
+  const_led_always_off: 2
+  const_led_always_on: 3
 
   # entities
   device_id: !input device_id
@@ -199,9 +196,11 @@ variables:
   light9_brightness: !input light9_brightness
 
   # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
-  led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
+  led_indicator_mode_param:  "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
   led_indicator_color_param: "{{ ((scene_button | int) % 5) + 6 }}" # '005' => 6, '001' => 7, '002' => 8, '003' => 9, '004' => 10
-
+  scene_active_led_mode:     "{{ const_led_always_off if scene_active_color == '-1' else const_led_always_on }}"
+  any_on_led_mode:           "{{ const_led_always_off if any_on_color       == '-1' else const_led_always_on }}"
+  all_off_led_mode:          "{{ const_led_always_off if all_off_color      == '-1' else const_led_always_on }}"
 
 trigger:
   # controller trigger (set light)
@@ -356,14 +355,7 @@ action:
           }}
         sequence:
           - choose:
-              - alias: "Scene active, LED color = off"
-                conditions: "{{ scene_active and scene_active_color == '-1' }}"
-                sequence: 
-                  - alias: Turn off ZEN32 indicator LED
-                    service: zwave_js.set_config_parameter 
-                    target: { device_id: !input device_id }
-                    data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
-              - alias: "Scene active, LED color specified"
+              - alias: "Scene active"
                 conditions: "{{ scene_active }}"
                 sequence: 
                   - parallel: 
@@ -371,19 +363,12 @@ action:
                         service: zwave_js.set_config_parameter 
                         target: { device_id: !input device_id }
                         data: { parameter: "{{ led_indicator_color_param }}", value: !input scene_active_color }
-                      - alias: Turn on ZEN32 indicator LED
+                      - alias: Set ZEN32 indicator LED state
                         service: zwave_js.set_config_parameter 
                         target: { device_id: !input device_id }
-                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
+                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ scene_active_led_mode }}" }
 
-              - alias: "Any on, LED color = off"
-                conditions: "{{ any_on and any_on_color == '-1' }}"
-                sequence: 
-                  - alias: Turn off ZEN32 indicator LED
-                    service: zwave_js.set_config_parameter 
-                    target: { device_id: !input device_id }
-                    data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
-              - alias: "Any on, LED color specified"
+              - alias: "Any on"
                 conditions: "{{ any_on }}"
                 sequence:
                   - parallel: 
@@ -394,16 +379,9 @@ action:
                       - alias: Turn on ZEN32 indicator LED
                         service: zwave_js.set_config_parameter 
                         target: { device_id: !input device_id }
-                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
+                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ any_on_led_mode }}" }
 
-              - alias: "All off, LED color = off"
-                conditions: "{{ all_off_color == '-1'}}"
-                sequence:
-                  - alias: Turn off ZEN32 indicator LED
-                    service: zwave_js.set_config_parameter 
-                    target: { device_id: !input device_id }
-                    data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
-              - alias: "All off, LED color specified"
+              - alias: "All off"
                 conditions: "{{ true }}"
                 sequence:
                   - parallel: 
@@ -414,7 +392,7 @@ action:
                     - alias: Turn on ZEN32 indicator LED
                       service: zwave_js.set_config_parameter
                       target: { device_id: !input device_id }
-                      data: { parameter: '{{ led_indicator_mode_param }}', value: '{{ led_always_on }}' }
+                      data: { parameter: '{{ led_indicator_mode_param }}', value: '{{ all_off_led_mode }}' }
 
       # controller
 
