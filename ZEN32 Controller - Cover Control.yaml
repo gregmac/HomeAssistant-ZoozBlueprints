@@ -1,0 +1,292 @@
+blueprint:
+  name: "Zooz ZEN32 Scene Controller: Cover Control"
+  #
+  #
+  description: >
+    Link a Zooz ZEN32 Scene Controller button to one or more covers (ie: garage doors or window blinds).
+
+
+    * Press button 1x to activate **Cover 1**, 2x to activate **Cover 2**, etc
+
+    * Hold button to close all covers
+
+
+    The Scene Controller LED indicator indicates the state of covers: one color if any are open, another if all are closed.
+    LED indicator colors can be customized
+
+  domain: automation
+  input:
+    device_id:
+      name: Zooz Switch
+      description: List of available Zooz ZEN32 switches.
+      selector:
+        device:
+          integration: zwave_js
+          manufacturer: Zooz
+          model: ZEN32
+    scene_button:
+      name: Control Button
+      description: The button to setup as the indicator and controller
+      default: '001'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: Scene 5 (Big Button)
+              value: '005'
+            - label: Scene 1 (Top Left)
+              value: '001'
+            - label: Scene 2 (Top Right)
+              value: '002'
+            - label: Scene 3 (Bottom Left)
+              value: '003'
+            - label: Scene 4 (Bottom Right)
+              value: '004'
+
+    any_open_color:
+      name: 'LED Indicator: Any cover open'
+      description: Scene button indicator color when any cover is open (default red)
+      default: '3'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    all_closed_color:
+      name: 'LED Indicator: All covers closed'
+      description: Scene button indicator color when all covers are closed (default green)
+      default: '2'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    cover1:           { name:      "Cover 1", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 1x" }
+    cover1_can_open:  { name: "Open Cover 1", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
+    cover2:           { name:      "Cover 2", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 2x" }
+    cover2_can_open:  { name: "Open Cover 2", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
+    cover3:           { name:      "Cover 3", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 3x" }
+    cover3_can_open:  { name: "Open Cover 3", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
+    cover4:           { name:      "Cover 4", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 4x" }
+    cover4_can_open:  { name: "Open Cover 4", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
+    cover5:           { name:      "Cover 5", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 5x" }
+    cover5_can_open:  { name: "Open Cover 5", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
+
+mode: parallel
+max_exceeded: silent
+
+variables:
+  # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  led_always_off: 2
+  led_always_on: 3
+
+  # entities
+  device_id: !input device_id
+  scene_button: !input scene_button
+  any_open_color: !input any_open_color
+  all_closed_color: !input all_closed_color
+
+  cover1: !input cover1
+  cover2: !input cover2
+  cover3: !input cover3
+  cover4: !input cover4
+  cover5: !input cover5
+  cover1_can_open: !input cover1_can_open
+  cover2_can_open: !input cover2_can_open
+  cover3_can_open: !input cover3_can_open
+  cover4_can_open: !input cover4_can_open
+  cover5_can_open: !input cover5_can_open
+
+  # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
+  led_indicator_color_param: "{{ ((scene_button | int) % 5) + 6 }}" # '005' => 6, '001' => 7, '002' => 8, '003' => 9, '004' => 10
+
+
+trigger:
+  # controller trigger
+  - platform: event
+    event_type: zwave_js_value_notification
+    event_data:
+      command_class_name: Central Scene
+      device_id: !input device_id
+
+  # cover state changed
+  - platform: state
+    entity_id: !input cover1
+  - platform: state
+    entity_id: !input cover2
+  - platform: state
+    entity_id: !input cover3
+  - platform: state
+    entity_id: !input cover4
+  - platform: state
+    entity_id: !input cover5
+
+  # used for initialization
+  - platform: event
+    event_type: automation_reloaded
+
+action:
+  - variables:
+      cover1_cur_state: "{%- if cover1 -%}{{ states(cover1) }}{%- endif -%}"
+      cover2_cur_state: "{%- if cover2 -%}{{ states(cover2) }}{%- endif -%}"
+      cover3_cur_state: "{%- if cover3 -%}{{ states(cover3) }}{%- endif -%}"
+      cover4_cur_state: "{%- if cover4 -%}{{ states(cover4) }}{%- endif -%}"
+      cover5_cur_state: "{%- if cover5 -%}{{ states(cover5) }}{%- endif -%}"
+
+      all_closed: >-
+        {{
+              (cover1_cur_state == 'closed' or not cover1)
+          and (cover2_cur_state == 'closed' or not cover2)
+          and (cover3_cur_state == 'closed' or not cover3)
+          and (cover4_cur_state == 'closed' or not cover4)
+          and (cover5_cur_state == 'closed' or not cover5)
+        }}
+      any_open: >-
+        {{ 
+             cover1_cur_state == 'open'
+          or cover2_cur_state == 'open'
+          or cover3_cur_state == 'open'
+          or cover4_cur_state == 'open'
+          or cover5_cur_state == 'open'
+        }}
+
+  # initialize
+  # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  - if:
+      - condition: template
+        value_template: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+    then:
+      - alias: "zwavejs: Don't flash indicators. Requires Firmware 10.20+"
+        service: zwave_js.set_config_parameter
+        continue_on_error: true # avoid failure for older firmware
+        target: { device_id: !input device_id } 
+        data: { parameter: 23, value: 1 }
+  
+  # debug
+  - service: logbook.log
+    data:
+      name: AutomationTest
+      message: |
+        trigger.entity_id: {{ trigger.entity_id }}
+
+        all_closed: {{ all_closed }}
+        any_open: {{ any_open }}
+
+        cover1: {{ cover1 }}
+        cover1_can_open: {{ cover1_can_open }}
+        cover1_cur_state: {{ cover1_cur_state }}
+
+        cover2: {{ cover2 }}
+        cover2_can_open: {{ cover2_can_open }}
+        cover2_cur_state: {{ cover2_cur_state }}
+
+        cover3: {{ cover3 }}
+        cover3_can_open: {{ cover3_can_open }}
+        cover3_cur_state: {{ cover3_cur_state }}
+
+  - choose:
+      - alias: Initializing, or Light state changed
+        conditions: >-
+          {{
+            (trigger.event and trigger.event.event_type == 'automation_reloaded')
+
+            or trigger.entity_id == cover1
+            or trigger.entity_id == cover2
+            or trigger.entity_id == cover3
+            or trigger.entity_id == cover4
+            or trigger.entity_id == cover5
+          }}
+        sequence:
+          - choose:
+              - alias: "All closed, LED color = off"
+                conditions: "{{ all_closed and all_closed_color == '-1' }}"
+                sequence: 
+                  - alias: Turn off ZEN32 indicator LED
+                    service: zwave_js.set_config_parameter 
+                    target: { device_id: !input device_id }
+                    data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
+              - alias: "All closed, LED color specified"
+                conditions: "{{ all_closed }}"
+                sequence: 
+                  - parallel: 
+                      - alias: Set ZEN32 indicator LED color
+                        service: zwave_js.set_config_parameter 
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_color_param }}", value: !input all_closed_color }
+                      - alias: Turn on ZEN32 indicator LED
+                        service: zwave_js.set_config_parameter 
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
+
+              - alias: "Any open, LED color = off"
+                conditions: "{{ any_open_color == '-1'}}"
+                sequence:
+                  - alias: Turn off ZEN32 indicator LED
+                    service: zwave_js.set_config_parameter 
+                    target: { device_id: !input device_id }
+                    data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
+              - alias: "Any open, LED color specified"
+                conditions: "{{ true }}"
+                sequence:
+                  - parallel: 
+                    - alias: Set ZEN32 indicator LED color
+                      service: zwave_js.set_config_parameter 
+                      target: {device_id: !input device_id}
+                      data: { parameter: "{{ led_indicator_color_param }}", value: !input any_open_color }
+                    - alias: Turn on ZEN32 indicator LED
+                      service: zwave_js.set_config_parameter
+                      target: { device_id: !input device_id }
+                      data: { parameter: '{{ led_indicator_mode_param }}', value: '{{ led_always_on }}' }
+
+      # controller
+
+      - alias: 'Controller held: Close all'
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyHeldDown' }}"
+        sequence: 
+          - parallel:
+              - { service: cover.close_cover, target: { entity_id: !input cover1 } }
+              - { service: cover.close_cover, target: { entity_id: !input cover2 } }
+              - { service: cover.close_cover, target: { entity_id: !input cover3 } }
+              - { service: cover.close_cover, target: { entity_id: !input cover4 } }
+              - { service: cover.close_cover, target: { entity_id: !input cover5 } }
+
+      - alias: 'Controller 1x: Toggle cover 1'
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed' }}"
+        sequence: [ { service: cover.toggle, target: { entity_id: !input cover1 } } ]
+
+      - alias: 'Controller 2x: Toggle cover 2'
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed2x' }}"
+        sequence: [ { service: cover.toggle, target: { entity_id: !input cover2 } } ]
+        
+      - alias: 'Controller 3x: Toggle cover 3'
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed3x' }}"
+        sequence: [ { service: cover.toggle, target: { entity_id: !input cover3 } } ]
+        
+      - alias: 'Controller 4x: Toggle cover 4'
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed4x' }}"
+        sequence: [ { service: cover.toggle, target: { entity_id: !input cover4 } } ]
+        
+      - alias: 'Controller 5x: Toggle cover 5'
+        conditions: "{{ trigger.event.data.device_id == device_id and trigger.event.data.property_key_name == scene_button and trigger.event.data.value == 'KeyPressed5x' }}"
+        sequence: [ { service: cover.toggle, target: { entity_id: !input cover5 } } ]
