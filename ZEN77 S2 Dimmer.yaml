@@ -1,8 +1,14 @@
 blueprint:
   name: "Zooz ZEN77 S2 Dimmer"
   description: >
-    Setup actions for all the different key press combinations on the
-    Zooz ZEN77 S2 700-series dimmer.
+    Setup actions for all the different key press combinations on the Zooz ZEN77 S2 700-series dimmer.
+
+
+    Other features:
+
+    * Enables scene control (parameter 13)
+
+    * Disables paddle programming mode (parameter 17, only on firmware 10.0+).
   domain: automation
 
   input:
@@ -36,7 +42,7 @@ blueprint:
 
     button_1_1x:      { name: "Paddle Up press 1x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed one time. Default: Turn on load." }
     button_1_2x:      { name: "Paddle Up press 2x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed two times." }
-    button_1_3x:      { name: "Paddle Up press 3x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times." }
+    button_1_3x:      { name: "Paddle Up press 3x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times. Note: Requires firmware 10.0+." }
     button_1_4x:      { name: "Paddle Up press 4x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed four times." }
     button_1_5x:      { name: "Paddle Up press 5x",   default: [], selector: { action: {} }, description: "Action to run when the button is pressed five times." }
     button_1_hold:    { name: "Paddle Up hold",       default: [], selector: { action: {} }, description: "Action to run when the button is held. Default: Increase dimmer brightness level." }
@@ -44,7 +50,7 @@ blueprint:
     
     button_2_1x:      { name: "Paddle Down press 1x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed one time. Default: Turn off load." }
     button_2_2x:      { name: "Paddle Down press 2x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed two times." }
-    button_2_3x:      { name: "Paddle Down press 3x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times." }
+    button_2_3x:      { name: "Paddle Down press 3x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times. Note: Requires firmware 10.0+." }
     button_2_4x:      { name: "Paddle Down press 4x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed four times." }
     button_2_5x:      { name: "Paddle Down press 5x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed five times." }
     button_2_hold:    { name: "Paddle Down hold",     default: [], selector: { action: {} }, description: "Action to run when the button is held. Default: Decrease dimmer brightness level." }
@@ -80,6 +86,12 @@ action:
             service: zwave_js.set_config_parameter
             target: { device_id: !input device_id }
             data: { parameter: 13, value: 1 }
+
+          - alias: "zwavejs: Disable local programming to allow 3-press actions. Requires Firmware 10.0+"
+            service: zwave_js.set_config_parameter
+            continue_on_error: true # avoid failure for older firmware
+            target: { device_id: !input device_id } 
+            data: { parameter: 26, value: 1 }
 
           # setup local control
           - if:

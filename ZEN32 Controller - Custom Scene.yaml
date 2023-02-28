@@ -29,6 +29,7 @@ blueprint:
 
     * LED indicator colors can be customized
 
+    * Disables setting 'LED flash on setting change' (parameter 23, only on firmware 10.20+).
   domain: automation
   input:
     device_id:

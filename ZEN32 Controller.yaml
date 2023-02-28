@@ -2,6 +2,11 @@ blueprint:
   name: "Zooz ZEN32 Scene Controller: Button actions"
   description: <
     Setup actions for individual buttons on the Zooz ZEN32 Scene Controller.
+
+
+    Other features:
+
+    * Disables paddle programming mode (parameter 22, only on firmware 10.0+)
   domain: automation
 
   input:
@@ -33,7 +38,7 @@ blueprint:
 
     button_5_1x:      {name: "Scene 5 (Big Button) press 1x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
     button_5_2x:      {name: "Scene 5 (Big Button) press 2x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
-    button_5_3x:      {name: "Scene 5 (Big Button) press 3x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
+    button_5_3x:      {name: "Scene 5 (Big Button) press 3x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times. Note: Requires firmware 10.0+."}
     button_5_4x:      {name: "Scene 5 (Big Button) press 4x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed four times."}
     button_5_5x:      {name: "Scene 5 (Big Button) press 5x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed five times."}
     button_5_hold:    {name: "Scene 5 (Big Button) hold",       default: [], selector: {action: {}}, description: "Action to run when the button is held."}
@@ -100,7 +105,12 @@ action:
       # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
-        # setup local control
+          - alias: "zwavejs: Disable local programming to allow 3-press actions. Requires Firmware 10.0+"
+            service: zwave_js.set_config_parameter
+            continue_on_error: true # avoid failure for older firmware
+            target: { device_id: !input device_id } 
+            data: { parameter: 22, value: 1 }
+
           - if:
               - condition: template
                 value_template: "{{ '!input local_control' != 'undefined' }}"

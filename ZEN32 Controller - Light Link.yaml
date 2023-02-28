@@ -21,6 +21,12 @@ blueprint:
 
     4. Set **Relay LED (big button) indicator mode** to *Always off*
 
+
+    Other features:
+
+    * Disables paddle programming mode (parameter 23, only on firmware 10.20+)
+
+
   domain: automation
   input:
     device_id:

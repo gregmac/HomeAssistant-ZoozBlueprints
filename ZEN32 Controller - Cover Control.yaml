@@ -14,6 +14,13 @@ blueprint:
     The Scene Controller LED indicator indicates the state of covers: one color if any are open, another if all are closed.
     LED indicator colors can be customized
 
+
+    Other features:
+
+    * Disables paddle programming mode (parameter 22, only on firmware 10.0+)
+
+    * Disables setting 'LED flash on setting change' (parameter 23, only on firmware 10.20+).
+
   domain: automation
   input:
     device_id:
@@ -85,7 +92,7 @@ blueprint:
     cover1_can_open:  { name: "Open Cover 1", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
     cover2:           { name:      "Cover 2", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 2x" }
     cover2_can_open:  { name: "Open Cover 2", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
-    cover3:           { name:      "Cover 3", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 3x" }
+    cover3:           { name:      "Cover 3", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 3x. Note: Requires firmware 10.0+." }
     cover3_can_open:  { name: "Open Cover 3", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
     cover4:           { name:      "Cover 4", default: [],   selector: { entity: { domain: cover } }, description: "Cover controlled by pressing 4x" }
     cover4_can_open:  { name: "Open Cover 4", default: true, selector: { boolean: {} },               description: "If this cover is allowed to be opened" }
@@ -177,6 +184,12 @@ action:
       - condition: template
         value_template: "{{ trigger.event.event_type == 'automation_reloaded' }}"
     then:
+      - alias: "zwavejs: Disable local programming to allow 3-press actions. Requires Firmware 10.0+"
+        service: zwave_js.set_config_parameter
+        continue_on_error: true # avoid failure for older firmware
+        target: { device_id: !input device_id } 
+        data: { parameter: 22, value: 1 }
+
       - alias: "zwavejs: Don't flash indicators. Requires Firmware 10.20+"
         service: zwave_js.set_config_parameter
         continue_on_error: true # avoid failure for older firmware
