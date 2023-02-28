@@ -31,45 +31,45 @@ blueprint:
             - label: Physical control (big button) disabled (control via Z-Wave only)
               value: '0'
 
-    button_5_1x:      {name: Scene 5 (Big Button) press 1x,   default: [], selector: {action: {}}, description: Action to run when the button is pressed one time.}
-    button_5_2x:      {name: Scene 5 (Big Button) press 2x,   default: [], selector: {action: {}}, description: Action to run when the button is pressed two times.}
-    button_5_3x:      {name: Scene 5 (Big Button) press 3x,   default: [], selector: {action: {}}, description: Action to run when the button is pressed three times.}
-    button_5_4x:      {name: Scene 5 (Big Button) press 4x,   default: [], selector: {action: {}}, description: Action to run when the button is pressed four times.}
-    button_5_5x:      {name: Scene 5 (Big Button) press 5x,   default: [], selector: {action: {}}, description: Action to run when the button is pressed five times.}
-    button_5_hold:    {name: Scene 5 (Big Button) hold,       default: [], selector: {action: {}}, description: Action to run when the button is held.}
-    button_5_release: {name: Scene 5 (Big Button) release,    default: [], selector: {action: {}}, description: Action to run when the button is released.}
+    button_5_1x:      {name: "Scene 5 (Big Button) press 1x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
+    button_5_2x:      {name: "Scene 5 (Big Button) press 2x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
+    button_5_3x:      {name: "Scene 5 (Big Button) press 3x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
+    button_5_4x:      {name: "Scene 5 (Big Button) press 4x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed four times."}
+    button_5_5x:      {name: "Scene 5 (Big Button) press 5x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed five times."}
+    button_5_hold:    {name: "Scene 5 (Big Button) hold",       default: [], selector: {action: {}}, description: "Action to run when the button is held."}
+    button_5_release: {name: "Scene 5 (Big Button) release",    default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
-    button_1_1x:      {name: Scene 1 (Top Left) press 1x,     default: [], selector: {action: {}}, description: Action to run when the button is pressed one time.}
-    button_1_2x:      {name: Scene 1 (Top Left) press 2x,     default: [], selector: {action: {}}, description: Action to run when the button is pressed two times.}
-    button_1_3x:      {name: Scene 1 (Top Left) press 3x,     default: [], selector: {action: {}}, description: Action to run when the button is pressed three times.}
-    button_1_4x:      {name: Scene 1 (Top Left) press 4x,     default: [], selector: {action: {}}, description: Action to run when the button is pressed four times.}
-    button_1_5x:      {name: Scene 1 (Top Left) press 5x,     default: [], selector: {action: {}}, description: Action to run when the button is pressed five times.}
-    button_1_hold:    {name: Scene 1 (Top Left) hold,         default: [], selector: {action: {}}, description: Action to run when the button is held.}
-    button_1_release: {name: Scene 1 (Top Left) release,      default: [], selector: {action: {}}, description: Action to run when the button is released.}
+    button_1_1x:      {name: "Scene 1 (Top Left) press 1x",     default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
+    button_1_2x:      {name: "Scene 1 (Top Left) press 2x",     default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
+    button_1_3x:      {name: "Scene 1 (Top Left) press 3x",     default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
+    button_1_4x:      {name: "Scene 1 (Top Left) press 4x",     default: [], selector: {action: {}}, description: "Action to run when the button is pressed four times."}
+    button_1_5x:      {name: "Scene 1 (Top Left) press 5x",     default: [], selector: {action: {}}, description: "Action to run when the button is pressed five times."}
+    button_1_hold:    {name: "Scene 1 (Top Left) hold",         default: [], selector: {action: {}}, description: "Action to run when the button is held."}
+    button_1_release: {name: "Scene 1 (Top Left) release",      default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
-    button_2_1x:      {name: Scene 2 (Top Right) press 1x,    default: [], selector: {action: {}}, description: Action to run when the button is pressed one time.}
-    button_2_2x:      {name: Scene 2 (Top Right) press 2x,    default: [], selector: {action: {}}, description: Action to run when the button is pressed two times.}
-    button_2_3x:      {name: Scene 2 (Top Right) press 3x,    default: [], selector: {action: {}}, description: Action to run when the button is pressed three times.}
-    button_2_4x:      {name: Scene 2 (Top Right) press 4x,    default: [], selector: {action: {}}, description: Action to run when the button is pressed four times.}
-    button_2_5x:      {name: Scene 2 (Top Right) press 5x,    default: [], selector: {action: {}}, description: Action to run when the button is pressed five times.}
-    button_2_hold:    {name: Scene 2 (Top Right) hold,        default: [], selector: {action: {}}, description: Action to run when the button is held.}
-    button_2_release: {name: Scene 2 (Top Right) release,     default: [], selector: {action: {}}, description: Action to run when the button is released.}
+    button_2_1x:      {name: "Scene 2 (Top Right) press 1x",    default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
+    button_2_2x:      {name: "Scene 2 (Top Right) press 2x",    default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
+    button_2_3x:      {name: "Scene 2 (Top Right) press 3x",    default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
+    button_2_4x:      {name: "Scene 2 (Top Right) press 4x",    default: [], selector: {action: {}}, description: "Action to run when the button is pressed four times."}
+    button_2_5x:      {name: "Scene 2 (Top Right) press 5x",    default: [], selector: {action: {}}, description: "Action to run when the button is pressed five times."}
+    button_2_hold:    {name: "Scene 2 (Top Right) hold",        default: [], selector: {action: {}}, description: "Action to run when the button is held."}
+    button_2_release: {name: "Scene 2 (Top Right) release",     default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
-    button_3_1x:      {name: Scene 3 (Bottom Left) press 1x,  default: [], selector: {action: {}}, description: Action to run when the button is pressed one time.}
-    button_3_2x:      {name: Scene 3 (Bottom Left) press 2x,  default: [], selector: {action: {}}, description: Action to run when the button is pressed two times.}
-    button_3_3x:      {name: Scene 3 (Bottom Left) press 3x,  default: [], selector: {action: {}}, description: Action to run when the button is pressed three times.}
-    button_3_4x:      {name: Scene 3 (Bottom Left) press 4x,  default: [], selector: {action: {}}, description: Action to run when the button is pressed four times.}
-    button_3_5x:      {name: Scene 3 (Bottom Left) press 5x,  default: [], selector: {action: {}}, description: Action to run when the button is pressed five times.}
-    button_3_hold:    {name: Scene 3 (Bottom Left) hold,      default: [], selector: {action: {}}, description: Action to run when the button is held.}
-    button_3_release: {name: Scene 3 (Bottom Left) release,   default: [], selector: {action: {}}, description: Action to run when the button is released.}
+    button_3_1x:      {name: "Scene 3 (Bottom Left) press 1x",  default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
+    button_3_2x:      {name: "Scene 3 (Bottom Left) press 2x",  default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
+    button_3_3x:      {name: "Scene 3 (Bottom Left) press 3x",  default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
+    button_3_4x:      {name: "Scene 3 (Bottom Left) press 4x",  default: [], selector: {action: {}}, description: "Action to run when the button is pressed four times."}
+    button_3_5x:      {name: "Scene 3 (Bottom Left) press 5x",  default: [], selector: {action: {}}, description: "Action to run when the button is pressed five times."}
+    button_3_hold:    {name: "Scene 3 (Bottom Left) hold",      default: [], selector: {action: {}}, description: "Action to run when the button is held."}
+    button_3_release: {name: "Scene 3 (Bottom Left) release",   default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
-    button_4_1x:      {name: Scene 4 (Bottom Right) press 1x, default: [], selector: {action: {}}, description: Action to run when the button is pressed one time.}
-    button_4_2x:      {name: Scene 4 (Bottom Right) press 2x, default: [], selector: {action: {}}, description: Action to run when the button is pressed two times.}
-    button_4_3x:      {name: Scene 4 (Bottom Right) press 3x, default: [], selector: {action: {}}, description: Action to run when the button is pressed three times.}
-    button_4_4x:      {name: Scene 4 (Bottom Right) press 4x, default: [], selector: {action: {}}, description: Action to run when the button is pressed four times.}
-    button_4_5x:      {name: Scene 4 (Bottom Right) press 5x, default: [], selector: {action: {}}, description: Action to run when the button is pressed five times.}
-    button_4_hold:    {name: Scene 4 (Bottom Right) hold,     default: [], selector: {action: {}}, description: Action to run when the button is held.}
-    button_4_release: {name: Scene 4 (Bottom Right) release,  default: [], selector: {action: {}}, description: Action to run when the button is released.}
+    button_4_1x:      {name: "Scene 4 (Bottom Right) press 1x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
+    button_4_2x:      {name: "Scene 4 (Bottom Right) press 2x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
+    button_4_3x:      {name: "Scene 4 (Bottom Right) press 3x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
+    button_4_4x:      {name: "Scene 4 (Bottom Right) press 4x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed four times."}
+    button_4_5x:      {name: "Scene 4 (Bottom Right) press 5x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed five times."}
+    button_4_hold:    {name: "Scene 4 (Bottom Right) hold",     default: [], selector: {action: {}}, description: "Action to run when the button is held."}
+    button_4_release: {name: "Scene 4 (Bottom Right) release",  default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
 mode: parallel
 max_exceeded: silent
