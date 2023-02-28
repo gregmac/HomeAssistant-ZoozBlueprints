@@ -105,7 +105,8 @@ action:
               - condition: template
                 value_template: "{{ '!input local_control' != 'undefined' }}"
             then:
-              - service: zwave_js.set_config_parameter
+              - alias: "zwavejs: Setup local control"
+                service: zwave_js.set_config_parameter
                 data: { parameter: 19, value: !input local_control }
                 target: { device_id: !input device_id }
 

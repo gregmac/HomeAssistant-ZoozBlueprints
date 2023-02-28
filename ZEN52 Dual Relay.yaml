@@ -88,33 +88,28 @@ action:
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
           # enable scene control
-          - service: zwave_js.set_config_parameter
-            data:
-              parameter: 16
-              value: 1
-            target: 
-              device_id: !input device_id
+          - alias: "zwavejs: Enable scene control"
+            service: zwave_js.set_config_parameter
+            target: { device_id: !input device_id }
+            data: { parameter: 16, value: 1 }
+
           # setup local control
           - if:
               - condition: template
                 value_template: "{{ '!input local_control_1' != 'undefined' }}"
             then:
-              - service: zwave_js.set_config_parameter
-                data:
-                  parameter: 17
-                  value: !input local_control_1
-                target: 
-                  device_id: !input device_id
+              - alias: "zwavejs: Setup local control for relay1"
+                service: zwave_js.set_config_parameter
+                target: { device_id: !input device_id }
+                data: { parameter: 17, value: !input local_control_1 }
           - if:
               - condition: template
                 value_template: "{{ '!input local_control_2' != 'undefined' }}"
             then:
-              - service: zwave_js.set_config_parameter
-                data:
-                  parameter: 18
-                  value: !input local_control_2
-                target: 
-                  device_id: !input device_id
+              - alias: "zwavejs: Setup local control for relay2"
+                service: zwave_js.set_config_parameter
+                target: { device_id: !input device_id }
+                data: { parameter: 18, value: !input local_control_2 }
 
       - conditions: "{{ scene_id == 'Scene 001' }}"
         sequence:

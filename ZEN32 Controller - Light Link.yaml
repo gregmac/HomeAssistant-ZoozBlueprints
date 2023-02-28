@@ -190,29 +190,26 @@ action:
       # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
-          - service: zwave_js.set_config_parameter
+          - alias: "zwavejs: Don't flash indicators. Requires Firmware 10.20+"
+            service: zwave_js.set_config_parameter
             target: { device_id: !input device_id } 
-            data:
-              parameter: 23                     # Enable / disable LED indicator for settings
-              value: 1                          # LED indicators don't flash if a setting is changed.
+            data: { parameter: 23, value: 1 }
           - if:
               - condition: template
                 value_template: "{{ local_control != 'undefined' }}"
             then:
-              - service: zwave_js.set_config_parameter
+              - alias: "zwavejs: Set local control mode" 
+                service: zwave_js.set_config_parameter
                 target: { device_id: !input device_id } 
-                data:
-                  parameter: 19                 # Local control mode
-                  value: !input local_control   # directly set from dropdown
+                data: { parameter: 19, value: !input local_control }
           - if:
               - condition: template
                 value_template: "{{ led_mode != 'undefined' }}"
             then:
-              - service: zwave_js.set_config_parameter
+              - alias: "zwavejs: Set LED indicator mode for relay button" 
+                service: zwave_js.set_config_parameter
                 target: { device_id: !input device_id } 
-                data:
-                  parameter: 1                  # LED indicator mode for relay button
-                  value: !input led_mode        # directly set from dropdown
+                data: { parameter: 1, value: !input led_mode }
 
       # controller
       - alias: Controller button pressed

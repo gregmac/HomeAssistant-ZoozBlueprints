@@ -307,12 +307,11 @@ action:
       - condition: template
         value_template: "{{ trigger.event.event_type == 'automation_reloaded' }}"
     then:
-      - service: zwave_js.set_config_parameter
+      - alias: "zwavejs: Don't flash indicators. Requires Firmware 10.20+"
+        service: zwave_js.set_config_parameter
         target: { device_id: !input device_id }
-        data:
-          parameter: 23                     # Enable / disable LED indicator for settings
-          value: 1                          # LED indicators don't flash if a setting is changed.
-  
+        data: { parameter: 23, value: 1 }
+
   # debug
   - service: logbook.log
     data:

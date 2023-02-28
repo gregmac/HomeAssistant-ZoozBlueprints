@@ -76,7 +76,8 @@ action:
         sequence:
         
           # enable scene control
-          - service: zwave_js.set_config_parameter
+          - alias: "zwavejs: Enable scene control"
+            service: zwave_js.set_config_parameter
             target: { device_id: !input device_id }
             data: { parameter: 13, value: 1 }
 
@@ -85,7 +86,8 @@ action:
               - condition: template
                 value_template: "{{ '!input local_control' != 'undefined' }}"
             then:
-              - service: zwave_js.set_config_parameter
+              - alias: "zwavejs: Setup local control"
+                service: zwave_js.set_config_parameter
                 target: { device_id: !input device_id }
                 data: { parameter: 15, value: !input local_control }
 
