@@ -1,12 +1,15 @@
 blueprint:
   name: "Zooz ZEN32 Scene Controller: Button actions"
-  description: <
+  description: >
     Setup actions for individual buttons on the Zooz ZEN32 Scene Controller.
 
 
     Other features:
 
+    * Allows changing which button controls local load, or disabling local load
+
     * Disables paddle programming mode (parameter 22, only on firmware 10.0+)
+
   domain: automation
 
   input:
@@ -23,7 +26,15 @@ blueprint:
 
     local_control:
       name: "Configuration: Local phyiscal control"
-      description: Enable or disable physical paddle on/off control (also known as "Smart Bulb Mode").
+      description: >
+        Control which button controls the local load, and allows disabling the load.
+        
+        
+        **Note:** If set to one of the scene buttons, **Local switch entity** *must* be specified.
+
+
+        This setting controls parameter 19 (also known as "Smart Bulb Mode"), and sets up
+        automations for the scene buttons, if specified.
       default: 'undefined'
       selector: 
         select:
@@ -33,8 +44,32 @@ blueprint:
               value: 'undefined'
             - label: Physical control (big button) enabled (device default)
               value: '1'
-            - label: Physical control (big button) disabled (control via Z-Wave only)
+            - label: Physical control disabled (control via Z-Wave only)
               value: '0'
+            - label: Control from Scene 1 (Top Left) button
+              value: 'Scene 001'
+            - label: Control from Scene 2 (Top Right) button
+              value: 'Scene 002'
+            - label: Control from Scene 3 (Bottom Left) button
+              value: 'Scene 003'
+            - label: Control from Scene 4 (Bottom Right) button
+              value: 'Scene 004'
+
+    local_switch:
+      name: "Configuration: Local switch entity"
+      # this is a limitation of homeassisant blueprints: It isn't possible to have a variable for a 
+      # state event, so we can't look this up dynamically, ie:
+      #    {{ device_entities(device_id) | select('match','^switch\\.') | first }}
+      description: >
+        The switch entity that is part of this switch. Required if Local Physical Control
+        is set to one of the scene buttons.
+      default: []
+      selector:
+        entity:
+          integration: zwave_js
+          domain:
+          - light
+          - switch
 
     button_5_1x:      {name: "Scene 5 (Big Button) press 1x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
     button_5_2x:      {name: "Scene 5 (Big Button) press 2x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
@@ -80,9 +115,17 @@ mode: parallel
 max_exceeded: silent
 
 variables: 
-  # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
-  led_indicator_mode_param: "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
+  # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  led_always_off: 2
+  led_always_on: 3
 
+  # # local control (if via zwave)
+  local_control: !input local_control
+  local_control_via_zwave: "{{ true if 'Scene' in local_control|string }}" # if automation controls this
+  local_switch: !input local_switch
+
+  # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  led_indicator_mode_param: "{{ ((local_control | regex_replace('[^\\d]','') | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
 
 trigger:
   - platform: event
@@ -95,82 +138,130 @@ trigger:
   - platform: event
     event_type: automation_reloaded
 
+  # switch entity, used for status
+  - platform: state
+    entity_id: !input local_switch
+
 action:
   - variables:
-      #button_id: '{{ trigger.event.data.property_key_name }}'
-      scene_id: "{{ trigger.event.data.label }}"
-      event_action: "{{ trigger.event.data.value }}"
-  - choose:
-      # initialize
-      # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
-      - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
-        sequence:
-          - alias: "zwavejs: Disable local programming to allow 3-press actions. Requires Firmware 10.0+"
-            service: zwave_js.set_config_parameter
-            continue_on_error: true # avoid failure for older firmware
-            target: { device_id: !input device_id } 
-            data: { parameter: 22, value: 1 }
+      local_switch_cur_state: "{%- if local_switch -%}{{ states(local_switch) }}{%- endif -%}"
 
+  # initialize
+  # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  - if:
+      - condition: template
+        value_template: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+    then:
+      - alias: "zwavejs: Disable local programming to allow 3-press actions. Requires Firmware 10.0+"
+        service: zwave_js.set_config_parameter
+        continue_on_error: true # avoid failure for older firmware
+        target: { device_id: !input device_id } 
+        data: { parameter: 22, value: 1 }
+
+      - if:
+          - condition: template
+            value_template: "{{ local_control != 'undefined' }}"
+        then:
+          - alias: "zwavejs: Setup local control"
+            service: zwave_js.set_config_parameter
+            # note: "Scene 001" etc also default to '0' (disable), so we control via this automation
+            data: { parameter: 19, value: "{{ local_control | int(0) }}" }
+            target: { device_id: !input device_id }
+
+  - alias: "Local control via non-default button"
+    if:
+      - condition: template
+        value_template: |
+          {{
+            local_control_via_zwave
+            and trigger.event.data.value == 'KeyPressed'
+            and trigger.event.data.label == local_control
+          }}
+    then:
+      # support either light or relay
+      - alias: "Toggle local relay"
+        service: switch.toggle
+        target: { entity_id: !input local_switch }
+      - alias: "Toggle local relay"
+        service: light.toggle
+        target: { entity_id: !input local_switch }
+
+  - choose:
+      - alias: "Reloaded, or switch changed"
+        conditions: |
+          {{
+            local_control_via_zwave
+            and (
+              (trigger.event and trigger.event.event_type == 'automation_reloaded')
+              or trigger.entity_id == local_switch
+            )
+          }}
+        sequence:
           - if:
               - condition: template
-                value_template: "{{ '!input local_control' != 'undefined' }}"
+                value_template: "{{ local_switch_cur_state == 'on' }}"
             then:
-              - alias: "zwavejs: Setup local control"
-                service: zwave_js.set_config_parameter
-                data: { parameter: 19, value: !input local_control }
+              - alias: Turn on ZEN32 indicator LED
+                service: zwave_js.set_config_parameter 
                 target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_on }}" }
+            else:
+              - alias: Turn off ZEN32 indicator LED
+                service: zwave_js.set_config_parameter 
+                target: { device_id: !input device_id }
+                data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ led_always_off }}" }
 
-      - conditions: "{{ scene_id == 'Scene 005' }}"
+      - conditions: "{{ trigger.event.data.label == 'Scene 005' }}"
         sequence: 
           - choose:
-              - { conditions: "{{ event_action == 'KeyPressed' }}",    sequence: !input button_5_1x }
-              - { conditions: "{{ event_action == 'KeyPressed2x' }}",  sequence: !input button_5_2x }
-              - { conditions: "{{ event_action == 'KeyPressed3x' }}",  sequence: !input button_5_3x }
-              - { conditions: "{{ event_action == 'KeyPressed4x' }}" , sequence: !input button_5_4x }
-              - { conditions: "{{ event_action == 'KeyPressed5x' }}",  sequence: !input button_5_5x }
-              - { conditions: "{{ event_action == 'KeyHeldDown' }}",   sequence: !input button_5_hold }
-              - { conditions: "{{ event_action == 'KeyReleased' }}",   sequence: !input button_5_release }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_5_1x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}",  sequence: !input button_5_2x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed3x' }}",  sequence: !input button_5_3x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed4x' }}" , sequence: !input button_5_4x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed5x' }}",  sequence: !input button_5_5x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_5_hold }
+              - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_5_release }
 
-      - conditions: "{{ scene_id == 'Scene 001' }}"
+      - conditions: "{{ trigger.event.data.label == 'Scene 001' }}"
         sequence:
           - choose:
-              - { conditions: "{{ event_action == 'KeyPressed' }}",    sequence: !input button_1_1x }
-              - { conditions: "{{ event_action == 'KeyPressed2x' }}",  sequence: !input button_1_2x }
-              - { conditions: "{{ event_action == 'KeyPressed3x' }}",  sequence: !input button_1_3x }
-              - { conditions: "{{ event_action == 'KeyPressed4x' }}" , sequence: !input button_1_4x }
-              - { conditions: "{{ event_action == 'KeyPressed5x' }}",  sequence: !input button_1_5x }
-              - { conditions: "{{ event_action == 'KeyHeldDown' }}",   sequence: !input button_1_hold }
-              - { conditions: "{{ event_action == 'KeyReleased' }}",   sequence: !input button_1_release }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_1_1x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}",  sequence: !input button_1_2x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed3x' }}",  sequence: !input button_1_3x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed4x' }}" , sequence: !input button_1_4x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed5x' }}",  sequence: !input button_1_5x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_1_hold }
+              - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_1_release }
 
-      - conditions: "{{ scene_id == 'Scene 002' }}"
+      - conditions: "{{ trigger.event.data.label == 'Scene 002' }}"
         sequence: 
           - choose:
-              - { conditions: "{{ event_action == 'KeyPressed' }}",    sequence: !input button_2_1x }
-              - { conditions: "{{ event_action == 'KeyPressed2x' }}",  sequence: !input button_2_2x }
-              - { conditions: "{{ event_action == 'KeyPressed3x' }}",  sequence: !input button_2_3x }
-              - { conditions: "{{ event_action == 'KeyPressed4x' }}" , sequence: !input button_2_4x }
-              - { conditions: "{{ event_action == 'KeyPressed5x' }}",  sequence: !input button_2_5x }
-              - { conditions: "{{ event_action == 'KeyHeldDown' }}",   sequence: !input button_2_hold }
-              - { conditions: "{{ event_action == 'KeyReleased' }}",   sequence: !input button_2_release }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_2_1x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}",  sequence: !input button_2_2x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed3x' }}",  sequence: !input button_2_3x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed4x' }}" , sequence: !input button_2_4x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed5x' }}",  sequence: !input button_2_5x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_2_hold }
+              - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_2_release }
 
-      - conditions: "{{ scene_id == 'Scene 003' }}"
+      - conditions: "{{ trigger.event.data.label == 'Scene 003' }}"
         sequence: 
           - choose:
-              - { conditions: "{{ event_action == 'KeyPressed' }}",    sequence: !input button_3_1x }
-              - { conditions: "{{ event_action == 'KeyPressed2x' }}",  sequence: !input button_3_2x }
-              - { conditions: "{{ event_action == 'KeyPressed3x' }}",  sequence: !input button_3_3x }
-              - { conditions: "{{ event_action == 'KeyPressed4x' }}" , sequence: !input button_3_4x }
-              - { conditions: "{{ event_action == 'KeyPressed5x' }}",  sequence: !input button_3_5x }
-              - { conditions: "{{ event_action == 'KeyHeldDown' }}",   sequence: !input button_3_hold }
-              - { conditions: "{{ event_action == 'KeyReleased' }}",   sequence: !input button_3_release }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_3_1x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}",  sequence: !input button_3_2x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed3x' }}",  sequence: !input button_3_3x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed4x' }}" , sequence: !input button_3_4x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed5x' }}",  sequence: !input button_3_5x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_3_hold }
+              - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_3_release }
 
-      - conditions: "{{ scene_id == 'Scene 004' }}"
+      - conditions: "{{ trigger.event.data.label == 'Scene 004' }}"
         sequence: 
           - choose:
-              - { conditions: "{{ event_action == 'KeyPressed' }}",    sequence: !input button_4_1x }
-              - { conditions: "{{ event_action == 'KeyPressed2x' }}",  sequence: !input button_4_2x }
-              - { conditions: "{{ event_action == 'KeyPressed3x' }}",  sequence: !input button_4_3x }
-              - { conditions: "{{ event_action == 'KeyPressed4x' }}" , sequence: !input button_4_4x }
-              - { conditions: "{{ event_action == 'KeyPressed5x' }}",  sequence: !input button_4_5x }
-              - { conditions: "{{ event_action == 'KeyHeldDown' }}",   sequence: !input button_4_hold }
-              - { conditions: "{{ event_action == 'KeyReleased' }}",   sequence: !input button_4_release }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_4_1x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed2x' }}",  sequence: !input button_4_2x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed3x' }}",  sequence: !input button_4_3x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed4x' }}" , sequence: !input button_4_4x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyPressed5x' }}",  sequence: !input button_4_5x }
+              - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_4_hold }
+              - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_4_release }
