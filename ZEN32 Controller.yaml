@@ -71,6 +71,7 @@ blueprint:
           - light
           - switch
 
+    led_5:            {name: "Scene 5 (Big Button) status",     default: [], selector: {entity: {}}, description: "Entity that controls the state of the LED. Optional."}
     button_5_1x:      {name: "Scene 5 (Big Button) press 1x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
     button_5_2x:      {name: "Scene 5 (Big Button) press 2x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
     button_5_3x:      {name: "Scene 5 (Big Button) press 3x",   default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times. Note: Requires firmware 10.0+."}
@@ -79,6 +80,7 @@ blueprint:
     button_5_hold:    {name: "Scene 5 (Big Button) hold",       default: [], selector: {action: {}}, description: "Action to run when the button is held."}
     button_5_release: {name: "Scene 5 (Big Button) release",    default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
+    led_1:            {name: "Scene 1 (Top Left) status",       default: [], selector: {entity: {}}, description: "Entity that controls the state of the LED. Optional."}
     button_1_1x:      {name: "Scene 1 (Top Left) press 1x",     default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
     button_1_2x:      {name: "Scene 1 (Top Left) press 2x",     default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
     button_1_3x:      {name: "Scene 1 (Top Left) press 3x",     default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
@@ -87,6 +89,7 @@ blueprint:
     button_1_hold:    {name: "Scene 1 (Top Left) hold",         default: [], selector: {action: {}}, description: "Action to run when the button is held."}
     button_1_release: {name: "Scene 1 (Top Left) release",      default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
+    led_2:            {name: "Scene 2 (Top Right) status",      default: [], selector: {entity: {}}, description: "Entity that controls the state of the LED. Optional."}
     button_2_1x:      {name: "Scene 2 (Top Right) press 1x",    default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
     button_2_2x:      {name: "Scene 2 (Top Right) press 2x",    default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
     button_2_3x:      {name: "Scene 2 (Top Right) press 3x",    default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
@@ -95,6 +98,7 @@ blueprint:
     button_2_hold:    {name: "Scene 2 (Top Right) hold",        default: [], selector: {action: {}}, description: "Action to run when the button is held."}
     button_2_release: {name: "Scene 2 (Top Right) release",     default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
+    led_3:            {name: "Scene 3 (Bottom Left) status",    default: [], selector: {entity: {}}, description: "Entity that controls the state of the LED. Optional."}
     button_3_1x:      {name: "Scene 3 (Bottom Left) press 1x",  default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
     button_3_2x:      {name: "Scene 3 (Bottom Left) press 2x",  default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
     button_3_3x:      {name: "Scene 3 (Bottom Left) press 3x",  default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
@@ -103,6 +107,7 @@ blueprint:
     button_3_hold:    {name: "Scene 3 (Bottom Left) hold",      default: [], selector: {action: {}}, description: "Action to run when the button is held."}
     button_3_release: {name: "Scene 3 (Bottom Left) release",   default: [], selector: {action: {}}, description: "Action to run when the button is released."}
 
+    led_4:            {name: "Scene 4 (Bottom Right) status",   default: [], selector: {entity: {}}, description: "Entity that controls the state of the LED. Optional."}
     button_4_1x:      {name: "Scene 4 (Bottom Right) press 1x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed one time."}
     button_4_2x:      {name: "Scene 4 (Bottom Right) press 2x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed two times."}
     button_4_3x:      {name: "Scene 4 (Bottom Right) press 3x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed three times."}
@@ -110,6 +115,44 @@ blueprint:
     button_4_5x:      {name: "Scene 4 (Bottom Right) press 5x", default: [], selector: {action: {}}, description: "Action to run when the button is pressed five times."}
     button_4_hold:    {name: "Scene 4 (Bottom Right) hold",     default: [], selector: {action: {}}, description: "Action to run when the button is held."}
     button_4_release: {name: "Scene 4 (Bottom Right) release",  default: [], selector: {action: {}}, description: "Action to run when the button is released."}
+
+    on_color:
+      name: 'LED Indicator: On color'
+      description: Button LED indicator color when state entity is on (default off)
+      default: '-1'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    off_color:
+      name: 'LED Indicator: Off color'
+      description: "Button LED indicator color when state entity is `off`, `closed`, `locked` or `home` (default white)"
+      default: '0'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
 
 mode: parallel
 max_exceeded: silent
@@ -119,13 +162,24 @@ variables:
   const_led_always_off: 2
   const_led_always_on: 3
 
-  # # local control (if via zwave)
+  # local control (if via zwave)
   local_control: !input local_control
   local_control_via_zwave: "{{ true if 'Scene' in local_control|string }}" # if automation controls this
   local_switch: !input local_switch
 
+  led_1: !input led_1
+  led_2: !input led_2
+  led_3: !input led_3
+  led_4: !input led_4
+  led_5: !input led_5
+
+  on_color: !input on_color
+  off_color: !input off_color
+
   # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
-  led_indicator_mode_param: "{{ ((local_control | regex_replace('[^\\d]','') | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
+  relay_led_indicator_mode_param: "{%- if local_control_via_zwave -%}{{ ((local_control | regex_replace('[^\\d]','') | int) % 5) + 1 }}{%- endif -%}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
+  on_led_mode:  "{{ const_led_always_off if on_color  == '-1' else const_led_always_on }}"
+  off_led_mode: "{{ const_led_always_off if off_color == '-1' else const_led_always_on }}"
 
 trigger:
   - platform: event
@@ -142,13 +196,57 @@ trigger:
   - platform: state
     entity_id: !input local_switch
 
+  # status entites, used for LED indicators
+  - { platform: state, entity_id: !input led_1 }
+  - { platform: state, entity_id: !input led_2 }
+  - { platform: state, entity_id: !input led_3 }
+  - { platform: state, entity_id: !input led_4 }
+  - { platform: state, entity_id: !input led_5 }
+
 action:
   - variables:
       local_switch_cur_state: "{%- if local_switch -%}{{ states(local_switch) }}{%- endif -%}"
 
+      led_1_state_off: "{%- if led_1 -%}{{ is_state(led_1, ['off','closed','locked','home']) }}{%- endif -%}"
+      led_2_state_off: "{%- if led_2 -%}{{ is_state(led_2, ['off','closed','locked','home']) }}{%- endif -%}"
+      led_3_state_off: "{%- if led_3 -%}{{ is_state(led_3, ['off','closed','locked','home']) }}{%- endif -%}"
+      led_4_state_off: "{%- if led_4 -%}{{ is_state(led_4, ['off','closed','locked','home']) }}{%- endif -%}"
+      led_5_state_off: "{%- if led_5 -%}{{ is_state(led_5, ['off','closed','locked','home']) }}{%- endif -%}"
+
+      led_1_color:     "{%- if led_1 -%}{%- if led_1_state_off -%}{{ off_color    }}{%- else -%}{{ on_color    }}{%- endif -%}{%- endif -%}"
+      led_2_color:     "{%- if led_2 -%}{%- if led_2_state_off -%}{{ off_color    }}{%- else -%}{{ on_color    }}{%- endif -%}{%- endif -%}"
+      led_3_color:     "{%- if led_3 -%}{%- if led_3_state_off -%}{{ off_color    }}{%- else -%}{{ on_color    }}{%- endif -%}{%- endif -%}"
+      led_4_color:     "{%- if led_4 -%}{%- if led_4_state_off -%}{{ off_color    }}{%- else -%}{{ on_color    }}{%- endif -%}{%- endif -%}"
+      led_5_color:     "{%- if led_5 -%}{%- if led_5_state_off -%}{{ off_color    }}{%- else -%}{{ on_color    }}{%- endif -%}{%- endif -%}"
+
+      led_1_led_mode:  "{%- if led_1 -%}{%- if led_1_state_off -%}{{ off_led_mode }}{%- else -%}{{ on_led_mode }}{%- endif -%}{%- endif -%}"
+      led_2_led_mode:  "{%- if led_2 -%}{%- if led_2_state_off -%}{{ off_led_mode }}{%- else -%}{{ on_led_mode }}{%- endif -%}{%- endif -%}"
+      led_3_led_mode:  "{%- if led_3 -%}{%- if led_3_state_off -%}{{ off_led_mode }}{%- else -%}{{ on_led_mode }}{%- endif -%}{%- endif -%}"
+      led_4_led_mode:  "{%- if led_4 -%}{%- if led_4_state_off -%}{{ off_led_mode }}{%- else -%}{{ on_led_mode }}{%- endif -%}{%- endif -%}"
+      led_5_led_mode:  "{%- if led_5 -%}{%- if led_5_state_off -%}{{ off_led_mode }}{%- else -%}{{ on_led_mode }}{%- endif -%}{%- endif -%}"
+
+  # debug
+  - service: logbook.log
+    data:
+      name: AutomationTest
+      message: |
+        trigger.entity_id: {{ trigger.entity_id }}
+
+        scene_active: {{ scene_active }}
+        any_on: {{ any_on }}
+
+        == {{ trigger.entity_id == led_4 }}
+
+        led_4: {{ led_4 }}
+        led_4_state_off: {{ led_4_state_off }}
+        led_4_color: {{ led_4_color }}
+        led_4_led_mode: {{ led_4_led_mode }}
+
+
   # initialize
   # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
-  - if:
+  - alias: "Initializing"
+    if:
       - condition: template
         value_template: "{{ trigger.event.event_type == 'automation_reloaded' }}"
     then:
@@ -167,6 +265,68 @@ action:
             # note: "Scene 001" etc also default to '0' (disable), so we control via this automation
             data: { parameter: 19, value: "{{ local_control | int(0) }}" }
             target: { device_id: !input device_id }
+
+  - alias: "Initializing, or switch state changed"
+    if:
+      - condition: template
+        value_template: |
+          {{
+            local_control_via_zwave
+            and (
+              (trigger.event and trigger.event.event_type == 'automation_reloaded')
+              or trigger.entity_id == local_switch
+            )
+          }}
+    then:
+      - alias: Set ZEN32 indicator LED state
+        service: zwave_js.set_config_parameter 
+        target: { device_id: !input device_id }
+        data: { parameter: "{{ relay_led_indicator_mode_param }}", value: "{{ const_led_always_on if  local_switch_cur_state == 'on' else const_led_always_off }}" }
+
+  - alias: "Initializing, or led input changed"
+    if:
+      - condition: template
+        value_template: |
+          {{
+            (trigger.event and trigger.event.event_type == 'automation_reloaded')
+            or trigger.entity_id == led_1
+            or trigger.entity_id == led_2
+            or trigger.entity_id == led_3
+            or trigger.entity_id == led_4
+            or trigger.entity_id == led_5
+          }}
+    then:
+      - parallel:
+          # set color (params 6 through 10) and mode (params 1 through 5)
+          - if:
+              - { condition: template, value_template: "{%- if led_5 -%}{{true}}{%- endif -%}" }
+            then:
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 6, value: "{{ led_5_color }}" } }
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 1, value: "{{ led_5_led_mode }}" } }
+
+          - if:
+              - { condition: template, value_template: "{%- if led_1 -%}{{true}}{%- endif -%}" }
+            then:
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 7, value: "{{ led_1_color }}" } }
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 2, value: "{{ led_1_led_mode }}" } }
+
+          - if:
+              - { condition: template, value_template: "{%- if led_2 -%}{{true}}{%- endif -%}" }
+            then:
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 8, value: "{{ led_2_color }}" } }
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 3, value: "{{ led_2_led_mode }}" } }
+
+          - if:
+              - { condition: template, value_template: "{%- if led_3 -%}{{true}}{%- endif -%}" }
+            then:
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 9, value: "{{ led_3_color }}" } }
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 4, value: "{{ led_3_led_mode }}" } }
+
+          - if:
+              - { condition: template, value_template: "{%- if led_4 -%}{{true}}{%- endif -%}" }
+            then:
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 10, value: "{{ led_4_color }}" } }
+              - { service: zwave_js.set_config_parameter, target: { device_id: !input device_id }, data: { parameter: 5, value: "{{ led_4_led_mode }}" } }
 
   - alias: "Local control via non-default button"
     if:
@@ -187,21 +347,6 @@ action:
         target: { entity_id: !input local_switch }
 
   - choose:
-      - alias: "Initializing, or switch state changed"
-        conditions: |
-          {{
-            local_control_via_zwave
-            and (
-              (trigger.event and trigger.event.event_type == 'automation_reloaded')
-              or trigger.entity_id == local_switch
-            )
-          }}
-        sequence:
-          - alias: Set ZEN32 indicator LED state
-            service: zwave_js.set_config_parameter 
-            target: { device_id: !input device_id }
-            data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ const_led_always_on if  local_switch_cur_state == 'on' else const_led_always_off }}" }
-
       - conditions: "{{ trigger.event.data.label == 'Scene 005' }}"
         sequence: 
           - choose:
