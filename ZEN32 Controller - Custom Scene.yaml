@@ -31,6 +31,7 @@ blueprint:
 
     * Disables setting 'LED flash on setting change' (parameter 23, only on firmware 10.20+).
   domain: automation
+
   input:
     device_id:
       name: Zooz Switch
@@ -143,6 +144,20 @@ blueprint:
             - label: Red
               value: '3'
 
+    transition_on:
+      name: Transition time to On
+      description: Time, in seconds, to turn on
+      default: 2
+      selector:
+        number: { min: 0, max: 300, unit_of_measurement: 'seconds' }
+
+    transition_off:
+      name: Transition time to Off
+      description: Time, in seconds, to turn off
+      default: 2
+      selector:
+        number: { min: 0, max: 300, unit_of_measurement: 'seconds' }
+
     match_delta:
       name: Active threshold
       description: >
@@ -154,10 +169,7 @@ blueprint:
         setting this to 2% or higher will cause the scene to be considered as "active".
       default: 5
       selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: '%'
+        number: { min: 0, max: 100, unit_of_measurement: '%' }
 
 
 mode: parallel
@@ -411,15 +423,15 @@ action:
           }}
         sequence: 
           - parallel:
-              - { service: light.turn_off, target: { entity_id: !input light1 } }
-              - { service: light.turn_off, target: { entity_id: !input light2 } }
-              - { service: light.turn_off, target: { entity_id: !input light3 } }
-              - { service: light.turn_off, target: { entity_id: !input light4 } }
-              - { service: light.turn_off, target: { entity_id: !input light5 } }
-              - { service: light.turn_off, target: { entity_id: !input light6 } }
-              - { service: light.turn_off, target: { entity_id: !input light7 } }
-              - { service: light.turn_off, target: { entity_id: !input light8 } }
-              - { service: light.turn_off, target: { entity_id: !input light9 } }
+              - { service: light.turn_off, target: { entity_id: !input light1 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light2 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light3 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light4 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light5 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light6 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light7 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light8 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light9 }, data: { transition: !input transition_off } }
 
       - alias: 'Controller button pressed twice: Turn on full'
         conditions: >-
@@ -453,12 +465,12 @@ action:
           }}
         sequence:
           - parallel:
-              - { service: light.turn_on, target: { entity_id: !input light1 }, data: { brightness_pct: !input light1_brightness } }
-              - { service: light.turn_on, target: { entity_id: !input light2 }, data: { brightness_pct: !input light2_brightness } }
-              - { service: light.turn_on, target: { entity_id: !input light3 }, data: { brightness_pct: !input light3_brightness } }
-              - { service: light.turn_on, target: { entity_id: !input light4 }, data: { brightness_pct: !input light4_brightness } }
-              - { service: light.turn_on, target: { entity_id: !input light5 }, data: { brightness_pct: !input light5_brightness } }
-              - { service: light.turn_on, target: { entity_id: !input light6 }, data: { brightness_pct: !input light6_brightness } }
-              - { service: light.turn_on, target: { entity_id: !input light7 }, data: { brightness_pct: !input light7_brightness } }
-              - { service: light.turn_on, target: { entity_id: !input light8 }, data: { brightness_pct: !input light8_brightness } }
-              - { service: light.turn_on, target: { entity_id: !input light9 }, data: { brightness_pct: !input light9_brightness } }
+              - { service: light.turn_on, target: { entity_id: !input light1 }, data: { brightness_pct: !input light1_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light2 }, data: { brightness_pct: !input light2_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light3 }, data: { brightness_pct: !input light3_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light4 }, data: { brightness_pct: !input light4_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light5 }, data: { brightness_pct: !input light5_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light6 }, data: { brightness_pct: !input light6_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light7 }, data: { brightness_pct: !input light7_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light8 }, data: { brightness_pct: !input light8_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light9 }, data: { brightness_pct: !input light9_brightness, transition: !input transition_on } }
