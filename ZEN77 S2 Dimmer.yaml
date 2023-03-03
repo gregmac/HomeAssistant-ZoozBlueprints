@@ -61,6 +61,14 @@ blueprint:
 mode: parallel
 max_exceeded: silent
 
+variables:
+  # docs: https://www.support.getzooz.com/kb/article/549-zen76-s2-on-off-switch-700-advanced-settings/
+  const_scene_control_param: 13
+  const_scene_control_enable: 1
+  const_local_control_param: 15
+  const_local_programming_param: 26
+  const_local_programming_disable: 1
+  
 trigger:
   - platform: event
     event_type: zwave_js_value_notification
@@ -79,7 +87,6 @@ action:
       event_action: "{{ trigger.event.data.value }}"
   - choose:
       # initialize
-      # docs: https://www.support.getzooz.com/kb/article/550-zen77-s2-dimmer-700-advanced-settings/
       - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
         
@@ -87,13 +94,13 @@ action:
           - alias: "zwavejs: Enable scene control"
             service: zwave_js.set_config_parameter
             target: { device_id: !input device_id }
-            data: { parameter: 13, value: 1 }
+            data: { parameter: "{{ const_scene_control_param }}", value: "{{ const_scene_control_enable }}" }
 
           - alias: "zwavejs: Disable local programming to allow 3-press actions. Requires Firmware 10.0+"
             service: zwave_js.set_config_parameter
             continue_on_error: true # avoid failure for older firmware
             target: { device_id: !input device_id } 
-            data: { parameter: 26, value: 1 }
+            data: { parameter: "{{ const_local_programming_param }}", value: "{{ const_local_programming_disable }}" }
 
           # setup local control
           - if:
@@ -103,7 +110,7 @@ action:
               - alias: "zwavejs: Setup local control"
                 service: zwave_js.set_config_parameter
                 target: { device_id: !input device_id }
-                data: { parameter: 15, value: !input local_control }
+                data: { parameter: "{{ const_local_control_param }}", value: !input local_control }
 
       # button press event
       - conditions: "{{ scene_id == 'Scene 001' }}"

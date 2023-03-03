@@ -106,6 +106,10 @@ variables:
   # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
   const_led_always_off: 2
   const_led_always_on: 3
+  const_local_programming_param: 22
+  const_local_programming_disable: 1
+  const_led_settings_param: 23
+  const_led_settings_disable: 1
 
   # entities
   device_id: !input device_id
@@ -180,7 +184,6 @@ action:
         }}
 
   # initialize
-  # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
   - if:
       - condition: template
         value_template: "{{ trigger.event.event_type == 'automation_reloaded' }}"
@@ -189,13 +192,13 @@ action:
         service: zwave_js.set_config_parameter
         continue_on_error: true # avoid failure for older firmware
         target: { device_id: !input device_id } 
-        data: { parameter: 22, value: 1 }
-
+        data: { parameter: "{{ const_local_programming_param }}", value: "{{ const_local_programming_disable }}" }
+        
       - alias: "zwavejs: Don't flash indicators. Requires Firmware 10.20+"
         service: zwave_js.set_config_parameter
         continue_on_error: true # avoid failure for older firmware
         target: { device_id: !input device_id } 
-        data: { parameter: 23, value: 1 }
+        data: { parameter: "{{ const_led_settings_param }}", value: "{{ const_led_settings_disable }}" }
 
   - choose:
       - alias: Initializing, or Light state changed
