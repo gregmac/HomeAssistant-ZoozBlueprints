@@ -1,0 +1,112 @@
+blueprint:
+  name: "Zooz LED brightness"
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
+  domain: automation
+  description: >
+    Automatically set brightness of the LED indicators on Zooz devices for day and night.
+
+    * Supports: ZEN32, ZEN76, and ZEN77.
+
+    * Transitions on Sunrise or Sunset, with configurable offsets
+
+    * Running the automation manually sets the levels immediately
+
+  input:
+    sunrise_offset:
+      name: Offset from sunrise
+      description: Number of minutes before/after actual sunrise to set to 'day' brightness.
+      default: 0
+      selector:
+        number:
+          min: -300
+          max: 300
+          step: 5
+          unit_of_measurement: minutes
+
+    day_brightness:
+      name: Brightness during day
+      description: Level to use after sunrise.
+      default: '0'
+      selector: 
+        select:
+          options:
+            - label: Bright (100%)
+              value: '0'
+            - label: Medium (60%, default)
+              value: '1'
+            - label: Low (30%)
+              value: '2'
+
+    sunset_offset:
+      name: Offset from sunset
+      description: Number of minutes before/after actual sunset to set to 'night' brightness.
+      default: 0
+      selector:
+        number:
+          min: -300
+          max: 300
+          step: 5
+          unit_of_measurement: minutes
+
+    night_brightness:
+      name: "Brightness at night"
+      description: Level to use after sunset.
+      default: '1'
+      selector: 
+        select:
+          options:
+            - label: Bright (100%)
+              value: '0'
+            - label: Medium (60%, default)
+              value: '1'
+            - label: Low (30%)
+              value: '2'
+
+    # Note: can't pick multiple manufacturers in 'selector:' so rather than list unrelated entries, one drop-down for each supported device type
+
+    devices_zen32: { name: ZEN32 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN32, multiple: true } }, description: "ZEN32 Scene Controllers (controls all 5 buttons)" }
+    devices_zen76: { name: ZEN76 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN76, multiple: true } }, description: "ZEN76 S2 On/Off Switch" }
+    devices_zen77: { name: ZEN77 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN77, multiple: true } }, description: "ZEN77 S2 Dimmers" }
+
+mode: single
+
+variables:
+  night_brightness: !input night_brightness
+  day_brightness: !input day_brightness
+  sunrise_offset: !input sunrise_offset
+  sunset_offset: !input sunset_offset
+
+trigger:
+  - platform: sun
+    event: sunrise
+    offset: !input sunrise_offset
+
+  - platform: sun
+    event: sunset
+    offset: !input sunset_offset
+
+  # trigger on startup
+  - platform: event
+    event_type: automation_reloaded
+
+action:
+  - variables:
+      # times as minutes since midnight
+      sunrise: "{{ ((states.sun.sun.attributes.next_rising |as_timestamp|timestamp_custom('%H')|int) * 60) + (states.sun.sun.attributes.next_rising |as_timestamp|timestamp_custom('%M')|int) + sunrise_offset }}"
+      sunset:  "{{ ((states.sun.sun.attributes.next_setting|as_timestamp|timestamp_custom('%H')|int) * 60) + (states.sun.sun.attributes.next_setting|as_timestamp|timestamp_custom('%M')|int) + sunset_offset }}"
+      now:     "{{ ((                                 now()|as_timestamp|timestamp_custom('%H')|int) * 60) + (                                 now()|as_timestamp|timestamp_custom('%M')|int) }}"
+
+      is_night: "{{ now < sunrise or now >= sunset }}"
+      brightness: "{{ night_brightness if is_night else day_brightness }}"
+
+  - parallel:
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 11, value: "{{ brightness }}" } }
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 12, value: "{{ brightness }}" } }
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 13, value: "{{ brightness }}" } }
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 14, value: "{{ brightness }}" } }
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 15, value: "{{ brightness }}" } }
+
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen76 }, data: { parameter: 15, value: "{{ brightness }}" } }
+
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen77 }, data: { parameter: 24, value: "{{ brightness }}" } }

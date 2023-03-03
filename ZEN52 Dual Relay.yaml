@@ -1,0 +1,135 @@
+blueprint:
+  name: "Zooz ZEN52 Dual Relay"
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
+  domain: automation
+  description: >
+    Setup actions for all the different input combinations on the
+    Zooz ZEN52 Dual Relay.
+
+  input:
+    device_id:
+      name: Source
+      description: |
+        The device to add automation triggers to.
+        Note that the "Scene Control" parameter will be enabled on this device (triggered by it coming online).
+      selector:
+        device:
+          integration: zwave_js
+          manufacturer: Zooz
+          model: ZEN52
+          multiple: false
+
+    local_control_1:
+      name: "Configuration: Relay 1 Local phyiscal control"
+      description: Enable or disable connected switch controlling relay on/off.
+      default: 'undefined'
+      selector: 
+        select:
+          mode: dropdown
+          options:
+            - label: Do not modify configuration
+              value: 'undefined'
+            - label: Physical switch/button control enabled (device default)
+              value: '1'
+            - label: Physical switch/button control disabled (control via Z-Wave only)
+              value: '0'
+    local_control_2:
+      name: "Configuration: Relay 2 Local phyiscal control"
+      description: Enable or disable connected switch controlling relay on/off.
+      default: 'undefined'
+      selector: 
+        select:
+          mode: dropdown
+          options:
+            - label: Do not modify configuration
+              value: 'undefined'
+            - label: Physical switch/button control enabled (device default)
+              value: '1'
+            - label: Physical switch/button control disabled (control via Z-Wave only)
+              value: '0'
+
+    button_1_1x:      { name: "Input S1 press 1x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed one times. Default: Turn on Relay 1 load." }
+    button_1_2x:      { name: "Input S1 press 2x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed two times." }
+    button_1_3x:      { name: "Input S1 press 3x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times." }
+    button_1_4x:      { name: "Input S1 press 4x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed four times." }
+    button_1_5x:      { name: "Input S1 press 5x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed five times." }
+    button_1_hold:    { name: "Input S1 hold",     default: [], selector: { action: {} }, description: "Action to run when the button is held." }
+    button_1_release: { name: "Input S1 release",  default: [], selector: { action: {} }, description: "Action to run when the button is released." }
+
+    button_2_1x:      { name: "Input S2 press 1x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed one times. Default: Turn on Relay 2 load." }
+    button_2_2x:      { name: "Input S2 press 2x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed two times." }
+    button_2_3x:      { name: "Input S2 press 3x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed three times." }
+    button_2_4x:      { name: "Input S2 press 4x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed four times." }
+    button_2_5x:      { name: "Input S2 press 5x", default: [], selector: { action: {} }, description: "Action to run when the button is pressed five times." }
+    button_2_hold:    { name: "Input S2 hold",     default: [], selector: { action: {} }, description: "Action to run when the button is held." }
+    button_2_release: { name: "Input S2 release",  default: [], selector: { action: {} }, description: "Action to run when the button is released." }
+
+mode: parallel
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zwave_js_value_notification
+    event_data:
+      command_class_name: Central Scene
+      device_id: !input device_id
+
+  # used for initialization
+  - platform: event
+    event_type: automation_reloaded
+
+action:
+  - variables:
+      #button_id: '{{ trigger.event.data.property_key_name }}'
+      scene_id: "{{ trigger.event.data.label }}"
+      event_action: "{{ trigger.event.data.value }}"
+  - choose:
+      # initialize
+      # docs: https://www.support.getzooz.com/kb/article/805-zen52-double-relay-advanced-settings/
+      - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+        sequence:
+          # enable scene control
+          - alias: "zwavejs: Enable scene control"
+            service: zwave_js.set_config_parameter
+            target: { device_id: !input device_id }
+            data: { parameter: 16, value: 1 }
+
+          # setup local control
+          - if:
+              - condition: template
+                value_template: "{{ '!input local_control_1' != 'undefined' }}"
+            then:
+              - alias: "zwavejs: Setup local control for relay1"
+                service: zwave_js.set_config_parameter
+                target: { device_id: !input device_id }
+                data: { parameter: 17, value: !input local_control_1 }
+          - if:
+              - condition: template
+                value_template: "{{ '!input local_control_2' != 'undefined' }}"
+            then:
+              - alias: "zwavejs: Setup local control for relay2"
+                service: zwave_js.set_config_parameter
+                target: { device_id: !input device_id }
+                data: { parameter: 18, value: !input local_control_2 }
+
+      - conditions: "{{ scene_id == 'Scene 001' }}"
+        sequence:
+          - choose:
+              - { conditions: "{{ event_action == 'KeyPressed' }}",   sequence: !input button_1_1x }
+              - { conditions: "{{ event_action == 'KeyPressed2x' }}", sequence: !input button_1_2x }
+              - { conditions: "{{ event_action == 'KeyPressed3x' }}", sequence: !input button_1_3x }
+              - { conditions: "{{ event_action == 'KeyPressed4x' }}", sequence: !input button_1_4x }
+              - { conditions: "{{ event_action == 'KeyPressed5x' }}", sequence: !input button_1_5x }
+              - { conditions: "{{ event_action == 'KeyHeldDown' }}",  sequence: !input button_1_hold }
+              - { conditions: "{{ event_action == 'KeyReleased' }}",  sequence: !input button_1_release }
+      - conditions: "{{ scene_id == 'Scene 002' }}"
+        sequence:
+          - choose:
+              - { conditions: "{{ event_action == 'KeyPressed' }}",   sequence: !input button_2_1x }
+              - { conditions: "{{ event_action == 'KeyPressed2x' }}", sequence: !input button_2_2x }
+              - { conditions: "{{ event_action == 'KeyPressed3x' }}", sequence: !input button_2_3x }
+              - { conditions: "{{ event_action == 'KeyPressed4x' }}", sequence: !input button_2_4x }
+              - { conditions: "{{ event_action == 'KeyPressed5x' }}", sequence: !input button_2_5x }
+              - { conditions: "{{ event_action == 'KeyHeldDown' }}",  sequence: !input button_2_hold }
+              - { conditions: "{{ event_action == 'KeyReleased' }}",  sequence: !input button_2_release }

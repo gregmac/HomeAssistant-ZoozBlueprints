@@ -1,0 +1,454 @@
+blueprint:
+  name: "Zooz ZEN32 Scene Controller: Custom Scene Control"
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
+  domain: automation
+  #
+  # Design limitations:
+  #
+  # * Entities to triggers and actions aren't dynamic, so each entitiy has to be specified indivudally
+  # * Built-in "scene" objects have no useful state, so aside from inability to setup a trigger (above) 
+  #   can't be used for what this automation does
+  #
+  description: >
+    Link a Zooz ZEN32 Scene Controller button to a custom scene, specified in the automation.
+    Supports up to 9 lights (all light inputs are optional). 
+
+
+    * Press button once to activate the scene. If the scene is already active, it is turned off.
+
+    * Press button twice to turn on all lights to 100%
+
+    * Hold button to turn off all lights
+
+
+    The Scene Controller LED indicator indicates the state of the scene: scene active, some lights on, or all
+    lights off. This state is based on the lights themselves, regardless of how they got into that state.
+
+
+    Other features:
+
+    * Manually triggering the automation activates the scene (a convenient way to use the scene from other places)
+
+    * LED indicator colors can be customized
+
+    * Disables setting 'LED flash on setting change' (parameter 23, only on firmware 10.20+).
+
+  input:
+    device_id:
+      name: Zooz Switch
+      description: List of available Zooz ZEN32 switches.
+      selector:
+        device:
+          integration: zwave_js
+          manufacturer: Zooz
+          model: ZEN32
+    scene_button:
+      name: Scene Button
+      description: The button to setup as the scene control
+      default: '001'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: Scene 5 (Big Button)
+              value: '005'
+            - label: Scene 1 (Top Left)
+              value: '001'
+            - label: Scene 2 (Top Right)
+              value: '002'
+            - label: Scene 3 (Bottom Left)
+              value: '003'
+            - label: Scene 4 (Bottom Right)
+              value: '004'
+
+    light1:            { name: "Light 1",            default: [],  selector: { entity: { domain: light } } }
+    light1_brightness: { name: "Light 1 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    light2:            { name: "Light 2",            default: [],  selector: { entity: { domain: light } } }
+    light2_brightness: { name: "Light 2 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    light3:            { name: "Light 3",            default: [],  selector: { entity: { domain: light } } }
+    light3_brightness: { name: "Light 3 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    light4:            { name: "Light 4",            default: [],  selector: { entity: { domain: light } } }
+    light4_brightness: { name: "Light 4 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    light5:            { name: "Light 5",            default: [],  selector: { entity: { domain: light } } }
+    light5_brightness: { name: "Light 5 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    light6:            { name: "Light 6",            default: [],  selector: { entity: { domain: light } } }
+    light6_brightness: { name: "Light 6 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    light7:            { name: "Light 7",            default: [],  selector: { entity: { domain: light } } }
+    light7_brightness: { name: "Light 7 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    light8:            { name: "Light 8",            default: [],  selector: { entity: { domain: light } } }
+    light8_brightness: { name: "Light 8 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    light9:            { name: "Light 9",            default: [],  selector: { entity: { domain: light } } }
+    light9_brightness: { name: "Light 9 Brightness", default: 100, selector: { number: { min: 0, max: 100, unit_of_measurement: '%' } } }
+
+    scene_active_color:
+      name: 'LED Indicator: Scene active'
+      description: Scene button indicator color when scene is active (default off)
+      default: '-1'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    any_on_color:
+      name: 'LED Indicator: Any scene lights on'
+      description: Scene button indicator color when any scene light is on but scene isn't active (default blue)
+      default: '1'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    all_off_color:
+      name: 'LED Indicator: All lights off'
+      description: Scene button indicator color when all scene lights are off (default white)
+      default: '0'
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: 'Off'
+              value: '-1'
+            - label: White
+              value: '0'
+            - label: Blue
+              value: '1'
+            - label: Green
+              value: '2'
+            - label: Red
+              value: '3'
+
+    transition_on:
+      name: Transition time to On
+      description: Time, in seconds, to turn on
+      default: 2
+      selector:
+        number: { min: 0, max: 300, unit_of_measurement: 'seconds' }
+
+    transition_off:
+      name: Transition time to Off
+      description: Time, in seconds, to turn off
+      default: 2
+      selector:
+        number: { min: 0, max: 300, unit_of_measurement: 'seconds' }
+
+    match_delta:
+      name: Active threshold
+      description: >
+        Threshold for how close current light brightness (%) needs to be to the configured brightnes
+        for the scene to be considered "active".
+
+
+        For example, if the scene has the light set to 100% and the light is currently at 98%, 
+        setting this to 2% or higher will cause the scene to be considered as "active".
+      default: 5
+      selector:
+        number: { min: 0, max: 100, unit_of_measurement: '%' }
+
+
+mode: parallel
+max_exceeded: silent
+
+variables:
+  # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  const_led_always_off: 2
+  const_led_always_on: 3
+
+  # entities
+  device_id: !input device_id
+  scene_button: !input scene_button
+  scene_active_color: !input scene_active_color
+  any_on_color: !input any_on_color
+  all_off_color: !input all_off_color
+  match_delta: !input match_delta
+
+  light1: !input light1
+  light2: !input light2
+  light3: !input light3
+  light4: !input light4
+  light5: !input light5
+  light6: !input light6
+  light7: !input light7
+  light8: !input light8
+  light9: !input light9
+  light1_brightness: !input light1_brightness
+  light2_brightness: !input light2_brightness
+  light3_brightness: !input light3_brightness
+  light4_brightness: !input light4_brightness
+  light5_brightness: !input light5_brightness
+  light6_brightness: !input light6_brightness
+  light7_brightness: !input light7_brightness
+  light8_brightness: !input light8_brightness
+  light9_brightness: !input light9_brightness
+
+  # from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  led_indicator_mode_param:  "{{ ((scene_button | int) % 5) + 1 }}" # '005' => 1, '001' => 2, '002' => 3, '003' => 4, '004' => 5
+  led_indicator_color_param: "{{ ((scene_button | int) % 5) + 6 }}" # '005' => 6, '001' => 7, '002' => 8, '003' => 9, '004' => 10
+  scene_active_led_mode:     "{{ const_led_always_off if scene_active_color == '-1' else const_led_always_on }}"
+  any_on_led_mode:           "{{ const_led_always_off if any_on_color       == '-1' else const_led_always_on }}"
+  all_off_led_mode:          "{{ const_led_always_off if all_off_color      == '-1' else const_led_always_on }}"
+
+trigger:
+  # controller trigger (set light)
+  - platform: event
+    event_type: zwave_js_value_notification
+    event_data:
+      command_class_name: Central Scene
+      device_id: !input device_id
+
+  # light state changed
+  - platform: state
+    entity_id: !input light1
+  - platform: state
+    entity_id: !input light2
+  - platform: state
+    entity_id: !input light3
+  - platform: state
+    entity_id: !input light4
+  - platform: state
+    entity_id: !input light5
+  - platform: state
+    entity_id: !input light6
+  - platform: state
+    entity_id: !input light7
+  - platform: state
+    entity_id: !input light8
+  - platform: state
+    entity_id: !input light9
+
+  # used for initialization
+  - platform: event
+    event_type: automation_reloaded
+
+action:
+  - variables:
+      light1_cur_state: "{%- if light1 -%}{{ states(light1) }}{%- endif -%}"
+      light2_cur_state: "{%- if light2 -%}{{ states(light2) }}{%- endif -%}"
+      light3_cur_state: "{%- if light3 -%}{{ states(light3) }}{%- endif -%}"
+      light4_cur_state: "{%- if light4 -%}{{ states(light4) }}{%- endif -%}"
+      light5_cur_state: "{%- if light5 -%}{{ states(light5) }}{%- endif -%}"
+      light6_cur_state: "{%- if light6 -%}{{ states(light6) }}{%- endif -%}"
+      light7_cur_state: "{%- if light7 -%}{{ states(light7) }}{%- endif -%}"
+      light8_cur_state: "{%- if light8 -%}{{ states(light8) }}{%- endif -%}"
+      light9_cur_state: "{%- if light9 -%}{{ states(light9) }}{%- endif -%}"
+
+      light1_cur_brightness: "{%- if light1 -%}{{ (((state_attr(light1, 'brightness')|int(light1_brightness*2.55))/2.55)|round) if light1_cur_state == 'on' else 0 }}{%- endif -%}"
+      light2_cur_brightness: "{%- if light2 -%}{{ (((state_attr(light2, 'brightness')|int(light2_brightness*2.55))/2.55)|round) if light2_cur_state == 'on' else 0 }}{%- endif -%}"
+      light3_cur_brightness: "{%- if light3 -%}{{ (((state_attr(light3, 'brightness')|int(light3_brightness*2.55))/2.55)|round) if light3_cur_state == 'on' else 0 }}{%- endif -%}"
+      light4_cur_brightness: "{%- if light4 -%}{{ (((state_attr(light4, 'brightness')|int(light4_brightness*2.55))/2.55)|round) if light4_cur_state == 'on' else 0 }}{%- endif -%}"
+      light5_cur_brightness: "{%- if light5 -%}{{ (((state_attr(light5, 'brightness')|int(light5_brightness*2.55))/2.55)|round) if light5_cur_state == 'on' else 0 }}{%- endif -%}"
+      light6_cur_brightness: "{%- if light6 -%}{{ (((state_attr(light6, 'brightness')|int(light6_brightness*2.55))/2.55)|round) if light6_cur_state == 'on' else 0 }}{%- endif -%}"
+      light7_cur_brightness: "{%- if light7 -%}{{ (((state_attr(light7, 'brightness')|int(light7_brightness*2.55))/2.55)|round) if light7_cur_state == 'on' else 0 }}{%- endif -%}"
+      light8_cur_brightness: "{%- if light8 -%}{{ (((state_attr(light8, 'brightness')|int(light8_brightness*2.55))/2.55)|round) if light8_cur_state == 'on' else 0 }}{%- endif -%}"
+      light9_cur_brightness: "{%- if light9 -%}{{ (((state_attr(light9, 'brightness')|int(light9_brightness*2.55))/2.55)|round) if light9_cur_state == 'on' else 0 }}{%- endif -%}"
+
+      light1_diff: "{{ (light1_brightness - light1_cur_brightness|int(999)) | abs | round }}"
+      light2_diff: "{{ (light2_brightness - light2_cur_brightness|int(999)) | abs | round }}"
+      light3_diff: "{{ (light3_brightness - light3_cur_brightness|int(999)) | abs | round }}"
+      light4_diff: "{{ (light4_brightness - light4_cur_brightness|int(999)) | abs | round }}"
+      light5_diff: "{{ (light5_brightness - light5_cur_brightness|int(999)) | abs | round }}"
+      light6_diff: "{{ (light6_brightness - light6_cur_brightness|int(999)) | abs | round }}"
+      light7_diff: "{{ (light7_brightness - light7_cur_brightness|int(999)) | abs | round }}"
+      light8_diff: "{{ (light8_brightness - light8_cur_brightness|int(999)) | abs | round }}"
+      light9_diff: "{{ (light9_brightness - light9_cur_brightness|int(999)) | abs | round }}"
+
+      light1_match: "{{ light1_diff <= match_delta }}"
+      light2_match: "{{ light2_diff <= match_delta }}"
+      light3_match: "{{ light3_diff <= match_delta }}"
+      light4_match: "{{ light4_diff <= match_delta }}"
+      light5_match: "{{ light5_diff <= match_delta }}"
+      light6_match: "{{ light6_diff <= match_delta }}"
+      light7_match: "{{ light7_diff <= match_delta }}"
+      light8_match: "{{ light8_diff <= match_delta }}"
+      light9_match: "{{ light9_diff <= match_delta }}"
+
+      scene_active: >-
+        {{
+              (light1_match or not light1)
+          and (light2_match or not light2)
+          and (light3_match or not light3)
+          and (light4_match or not light4)
+          and (light5_match or not light5)
+          and (light6_match or not light6)
+          and (light7_match or not light7)
+          and (light8_match or not light8)
+          and (light9_match or not light9)
+        }}
+      any_on: >-
+        {{ 
+             light1_cur_state == 'on'
+          or light2_cur_state == 'on'
+          or light3_cur_state == 'on'
+          or light4_cur_state == 'on'
+          or light5_cur_state == 'on'
+          or light6_cur_state == 'on'
+          or light7_cur_state == 'on'
+          or light8_cur_state == 'on'
+          or light9_cur_state == 'on'
+        }}
+
+  # initialize
+  # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
+  - if:
+      - condition: template
+        value_template: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+    then:
+      - alias: "zwavejs: Don't flash indicators. Requires Firmware 10.20+"
+        service: zwave_js.set_config_parameter
+        continue_on_error: true # avoid failure for older firmware
+        target: { device_id: !input device_id }
+        data: { parameter: 23, value: 1 }
+
+  - choose:
+      - alias: Initializing, or Light state changed
+        conditions: >-
+          {{
+            (trigger.event and trigger.event.event_type == 'automation_reloaded')
+
+            or trigger.entity_id == light1
+            or trigger.entity_id == light2
+            or trigger.entity_id == light3
+            or trigger.entity_id == light4
+            or trigger.entity_id == light5
+            or trigger.entity_id == light6
+            or trigger.entity_id == light7
+            or trigger.entity_id == light8
+            or trigger.entity_id == light9
+          }}
+        sequence:
+          - choose:
+              - alias: "Scene active"
+                conditions: "{{ scene_active }}"
+                sequence: 
+                  - parallel: 
+                      - alias: Set ZEN32 indicator LED color
+                        service: zwave_js.set_config_parameter 
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_color_param }}", value: !input scene_active_color }
+                      - alias: Set ZEN32 indicator LED state
+                        service: zwave_js.set_config_parameter 
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ scene_active_led_mode }}" }
+
+              - alias: "Any on"
+                conditions: "{{ any_on }}"
+                sequence:
+                  - parallel: 
+                      - alias: Set ZEN32 indicator LED color
+                        service: zwave_js.set_config_parameter 
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_color_param }}", value: !input any_on_color }
+                      - alias: Turn on ZEN32 indicator LED
+                        service: zwave_js.set_config_parameter 
+                        target: { device_id: !input device_id }
+                        data: { parameter: "{{ led_indicator_mode_param }}", value: "{{ any_on_led_mode }}" }
+
+              - alias: "All off"
+                conditions: "{{ true }}"
+                sequence:
+                  - parallel: 
+                    - alias: Set ZEN32 indicator LED color
+                      service: zwave_js.set_config_parameter 
+                      target: {device_id: !input device_id}
+                      data: { parameter: "{{ led_indicator_color_param }}", value: !input all_off_color }
+                    - alias: Turn on ZEN32 indicator LED
+                      service: zwave_js.set_config_parameter
+                      target: { device_id: !input device_id }
+                      data: { parameter: '{{ led_indicator_mode_param }}', value: '{{ all_off_led_mode }}' }
+
+      # controller
+
+      - alias: 'Controller button held, or once with scene not active: Turn off'
+        conditions: >-
+          {{
+                trigger.event.data.device_id == device_id 
+            and trigger.event.data.property_key_name == scene_button 
+            and (
+              (
+                    trigger.event.data.value == 'KeyPressed'
+                and scene_active
+              )
+              or trigger.event.data.value == 'KeyHeldDown'
+            )
+          }}
+        sequence: 
+          - parallel:
+              - { service: light.turn_off, target: { entity_id: !input light1 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light2 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light3 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light4 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light5 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light6 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light7 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light8 }, data: { transition: !input transition_off } }
+              - { service: light.turn_off, target: { entity_id: !input light9 }, data: { transition: !input transition_off } }
+
+      - alias: 'Controller button pressed twice: Turn on full'
+        conditions: >-
+          {{
+                trigger.event.data.device_id == device_id
+            and trigger.event.data.property_key_name == scene_button
+            and trigger.event.data.value == 'KeyPressed2x'
+          }}
+        sequence: 
+          - parallel:
+              - { service: light.turn_on, target: { entity_id: !input light1 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light2 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light3 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light4 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light5 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light6 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light7 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light8 }, data: { brightness_pct: 100 } }
+              - { service: light.turn_on, target: { entity_id: !input light9 }, data: { brightness_pct: 100 } }
+
+      - alias: 'Controller button once, or automation manually triggered: Activate scene'
+        conditions: >-
+          {{
+            not trigger.event
+
+            or (
+              trigger.event.data.device_id == device_id
+              and trigger.event.data.property_key_name == scene_button
+              and trigger.event.data.value == 'KeyPressed'
+            )
+          }}
+        sequence:
+          - parallel:
+              - { service: light.turn_on, target: { entity_id: !input light1 }, data: { brightness_pct: !input light1_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light2 }, data: { brightness_pct: !input light2_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light3 }, data: { brightness_pct: !input light3_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light4 }, data: { brightness_pct: !input light4_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light5 }, data: { brightness_pct: !input light5_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light6 }, data: { brightness_pct: !input light6_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light7 }, data: { brightness_pct: !input light7_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light8 }, data: { brightness_pct: !input light8_brightness, transition: !input transition_on } }
+              - { service: light.turn_on, target: { entity_id: !input light9 }, data: { brightness_pct: !input light9_brightness, transition: !input transition_on } }
