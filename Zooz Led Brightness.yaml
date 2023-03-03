@@ -3,13 +3,26 @@ blueprint:
   description: >
     Automatically set brightness of the LED indicators on Zooz devices for day and night.
 
+    * Supports: ZEN32, ZEN76, and ZEN77.
 
-    Supports: ZEN32, ZEN76, ZEN77
+    * Sunrise/Sunset times 
   domain: automation
 
   input:
+    sunrise_offset:
+      name: Offset from sunrise
+      description: Number of minutes before/after actual sunrise to set to 'day' brightness.
+      default: 0
+      selector:
+        number:
+          min: -300
+          max: 300
+          step: 5
+          unit_of_measurement: minutes
+
     day_brightness:
       name: Brightness during day
+      description: Level to use after sunrise.
       default: '0'
       selector: 
         select:
@@ -21,8 +34,20 @@ blueprint:
             - label: Low (30%)
               value: '2'
 
+    sunset_offset:
+      name: Offset from sunset
+      description: Number of minutes before/after actual sunset to set to 'night' brightness.
+      default: 0
+      selector:
+        number:
+          min: -300
+          max: 300
+          step: 5
+          unit_of_measurement: minutes
+
     night_brightness:
       name: "Brightness at night"
+      description: Level to use after sunset.
       default: '1'
       selector: 
         select:
@@ -34,30 +59,37 @@ blueprint:
             - label: Low (30%)
               value: '2'
 
+    # Note: can't pick multiple manufacturers in 'selector:' so rather than list unrelated entries, one drop-down for each supported device type
 
-    devices_zen32: { name: ZEN32 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN32, multiple: true } } }
-    devices_zen76: { name: ZEN76 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN76, multiple: true } } }
-    devices_zen77: { name: ZEN77 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN77, multiple: true } } }
+    devices_zen32: { name: ZEN32 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN32, multiple: true } }, description: "ZEN32 Scene Controllers (controls all 5 buttons)" }
+    devices_zen76: { name: ZEN76 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN76, multiple: true } }, description: "ZEN76 S2 On/Off Switch" }
+    devices_zen77: { name: ZEN77 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN77, multiple: true } }, description: "ZEN77 S2 Dimmers" }
 
 mode: single
 
 variables:
   night_brightness: !input night_brightness
   day_brightness: !input day_brightness
+  sunrise_offset: !input sunrise_offset
+  sunset_offset: !input sunset_offset
 
 trigger:
   - platform: sun
     event: sunrise
+    offset: !input sunrise_offset
 
   - platform: sun
     event: sunset
+    offset: !input sunset_offset
 
 action:
   - variables:
-      secs_to_next_sunrise: "{{ (as_timestamp(states.sun.sun.attributes.next_rising)  - as_timestamp(now())) }}"
-      secs_to_next_sunset:  "{{ (as_timestamp(states.sun.sun.attributes.next_setting) - as_timestamp(now())) }}"
+      # times as minutes since midnight
+      sunrise: "{{ ((states.sun.sun.attributes.next_rising |as_timestamp|timestamp_custom('%H')|int) * 60) + (states.sun.sun.attributes.next_rising |as_timestamp|timestamp_custom('%M')|int) + sunrise_offset }}"
+      sunset:  "{{ ((states.sun.sun.attributes.next_setting|as_timestamp|timestamp_custom('%H')|int) * 60) + (states.sun.sun.attributes.next_setting|as_timestamp|timestamp_custom('%M')|int) + sunset_offset }}"
+      now:     "{{ ((                                 now()|as_timestamp|timestamp_custom('%H')|int) * 60) + (                                 now()|as_timestamp|timestamp_custom('%M')|int) }}"
 
-      is_night: "{{ secs_to_next_sunrise < secs_to_next_sunset }}"
+      is_night: "{{ now < sunrise or now >= sunset }}"
       brightness: "{{ night_brightness if is_night else day_brightness }}"
 
   - parallel:
