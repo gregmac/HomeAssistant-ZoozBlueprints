@@ -196,28 +196,6 @@ action:
         continue_on_error: true # avoid failure for older firmware
         target: { device_id: !input device_id } 
         data: { parameter: 23, value: 1 }
-  
-  # debug
-  - service: logbook.log
-    data:
-      name: AutomationTest
-      message: |
-        trigger.entity_id: {{ trigger.entity_id }}
-
-        all_closed: {{ all_closed }}
-        any_open: {{ any_open }}
-
-        cover1: {{ cover1 }}
-        cover1_can_open: {{ cover1_can_open }}
-        cover1_cur_state: {{ cover1_cur_state }}
-
-        cover2: {{ cover2 }}
-        cover2_can_open: {{ cover2_can_open }}
-        cover2_cur_state: {{ cover2_cur_state }}
-
-        cover3: {{ cover3 }}
-        cover3_can_open: {{ cover3_can_open }}
-        cover3_cur_state: {{ cover3_cur_state }}
 
   - choose:
       - alias: Initializing, or Light state changed

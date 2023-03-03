@@ -325,30 +325,6 @@ action:
         target: { device_id: !input device_id }
         data: { parameter: 23, value: 1 }
 
-  # debug
-  - service: logbook.log
-    data:
-      name: AutomationTest
-      message: |
-        trigger.entity_id: {{ trigger.entity_id }}
-
-        scene_active: {{ scene_active }}
-        any_on: {{ any_on }}
-
-        light1: {{ light1 }}
-        light1_brightness: {{ light1_brightness }}
-        light1_cur_state: {{ light1_cur_state }}
-        light1_cur_brightness: {{ light1_cur_brightness }}
-        light1_diff: {{ light1_diff }}
-        light1_match: {{ light1_match }}
-
-        light2: {{ light2 }}
-        light2_brightness: {{ light2_brightness }}
-        light2_cur_state: {{ light2_cur_state }}
-        light2_cur_brightness: {{ light2_cur_brightness }}
-        light2_diff: {{ light2_diff }}
-        light2_match: {{ light2_match }}
-
   - choose:
       - alias: Initializing, or Light state changed
         conditions: >-

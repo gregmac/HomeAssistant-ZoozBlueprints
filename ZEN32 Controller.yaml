@@ -225,24 +225,6 @@ action:
       led_4_led_mode:  "{%- if led_4 -%}{%- if led_4_state_off -%}{{ off_led_mode }}{%- else -%}{{ on_led_mode }}{%- endif -%}{%- endif -%}"
       led_5_led_mode:  "{%- if led_5 -%}{%- if led_5_state_off -%}{{ off_led_mode }}{%- else -%}{{ on_led_mode }}{%- endif -%}{%- endif -%}"
 
-  # debug
-  - service: logbook.log
-    data:
-      name: AutomationTest
-      message: |
-        trigger.entity_id: {{ trigger.entity_id }}
-
-        scene_active: {{ scene_active }}
-        any_on: {{ any_on }}
-
-        == {{ trigger.entity_id == led_4 }}
-
-        led_4: {{ led_4 }}
-        led_4_state_off: {{ led_4_state_off }}
-        led_4_color: {{ led_4_color }}
-        led_4_led_mode: {{ led_4_led_mode }}
-
-
   # initialize
   # docs: https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
   - alias: "Initializing"
