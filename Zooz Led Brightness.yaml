@@ -1,0 +1,72 @@
+blueprint:
+  name: "Zooz LED brightness"
+  description: >
+    Automatically set brightness of the LED indicators on Zooz devices for day and night.
+
+
+    Supports: ZEN32, ZEN76, ZEN77
+  domain: automation
+
+  input:
+    day_brightness:
+      name: Brightness during day
+      default: '0'
+      selector: 
+        select:
+          options:
+            - label: Bright (100%)
+              value: '0'
+            - label: Medium (60%, default)
+              value: '1'
+            - label: Low (30%)
+              value: '2'
+
+    night_brightness:
+      name: "Brightness at night"
+      default: '1'
+      selector: 
+        select:
+          options:
+            - label: Bright (100%)
+              value: '0'
+            - label: Medium (60%, default)
+              value: '1'
+            - label: Low (30%)
+              value: '2'
+
+
+    devices_zen32: { name: ZEN32 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN32, multiple: true } } }
+    devices_zen76: { name: ZEN76 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN76, multiple: true } } }
+    devices_zen77: { name: ZEN77 Device(s), default: [], selector: { device: { integration: zwave_js, manufacturer: Zooz, model: ZEN77, multiple: true } } }
+
+mode: single
+
+variables:
+  night_brightness: !input night_brightness
+  day_brightness: !input day_brightness
+
+trigger:
+  - platform: sun
+    event: sunrise
+
+  - platform: sun
+    event: sunset
+
+action:
+  - variables:
+      secs_to_next_sunrise: "{{ (as_timestamp(states.sun.sun.attributes.next_rising)  - as_timestamp(now())) }}"
+      secs_to_next_sunset:  "{{ (as_timestamp(states.sun.sun.attributes.next_setting) - as_timestamp(now())) }}"
+
+      is_night: "{{ secs_to_next_sunrise < secs_to_next_sunset }}"
+      brightness: "{{ night_brightness if is_night else day_brightness }}"
+
+  - parallel:
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 11, value: "{{ brightness }}" } }
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 12, value: "{{ brightness }}" } }
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 13, value: "{{ brightness }}" } }
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 14, value: "{{ brightness }}" } }
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 15, value: "{{ brightness }}" } }
+
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen76 }, data: { parameter: 15, value: "{{ brightness }}" } }
+
+      - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen77 }, data: { parameter: 24, value: "{{ brightness }}" } }
