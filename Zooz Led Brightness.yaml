@@ -1,12 +1,14 @@
 blueprint:
   name: "Zooz LED brightness"
+  domain: automation
   description: >
     Automatically set brightness of the LED indicators on Zooz devices for day and night.
 
     * Supports: ZEN32, ZEN76, and ZEN77.
 
-    * Sunrise/Sunset times 
-  domain: automation
+    * Transitions on Sunrise or Sunset, with configurable offsets
+
+    * Running the automation manually sets the levels immediately
 
   input:
     sunrise_offset:
@@ -81,6 +83,10 @@ trigger:
   - platform: sun
     event: sunset
     offset: !input sunset_offset
+
+  # trigger on startup
+  - platform: event
+    event_type: automation_reloaded
 
 action:
   - variables:
