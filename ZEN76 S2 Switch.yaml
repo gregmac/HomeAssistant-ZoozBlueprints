@@ -1,5 +1,8 @@
 blueprint:
   name: "Zooz ZEN76 S2 Switch"
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
+  domain: automation
   description: >
     Setup actions for all the different key press combinations on the Zooz ZEN76 S2 700-series switch.
 
@@ -8,7 +11,6 @@ blueprint:
     * Enables scene control (parameter 10)
 
     * Disables paddle programming mode (parameter 17, only on firmware 10.0+).
-  domain: automation
 
   input:
     device_id:

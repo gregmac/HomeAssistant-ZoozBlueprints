@@ -1,7 +1,7 @@
 blueprint:
   name: "Zooz ZEN32 Scene Controller: Cover Control"
-  #
-  #
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
   description: >
     Link a Zooz ZEN32 Scene Controller button to one or more covers (ie: garage doors or window blinds).
 

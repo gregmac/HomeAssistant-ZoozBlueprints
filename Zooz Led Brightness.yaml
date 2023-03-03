@@ -1,5 +1,7 @@
 blueprint:
   name: "Zooz LED brightness"
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
   domain: automation
   description: >
     Automatically set brightness of the LED indicators on Zooz devices for day and night.

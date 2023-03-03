@@ -1,9 +1,11 @@
 blueprint:
   name: "Zooz ZEN52 Dual Relay"
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
+  domain: automation
   description: >
     Setup actions for all the different input combinations on the
     Zooz ZEN52 Dual Relay.
-  domain: automation
 
   input:
     device_id:

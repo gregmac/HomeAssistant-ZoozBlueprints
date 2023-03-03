@@ -1,5 +1,8 @@
 blueprint:
   name: "Zooz ZEN32 Scene Controller: Custom Scene Control"
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
+  domain: automation
   #
   # Design limitations:
   #
@@ -30,7 +33,6 @@ blueprint:
     * LED indicator colors can be customized
 
     * Disables setting 'LED flash on setting change' (parameter 23, only on firmware 10.20+).
-  domain: automation
 
   input:
     device_id:

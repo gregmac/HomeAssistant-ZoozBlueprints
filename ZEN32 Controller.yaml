@@ -1,5 +1,8 @@
 blueprint:
-  name: "Zooz ZEN32 Scene Controller: Button actions"
+  name: "Zooz ZEN32 Scene Controller"
+  author: gregmac
+  homeassistant: { min_version: 2023.3.1 }
+  domain: automation
   description: >
     Setup actions for individual buttons on the Zooz ZEN32 Scene Controller.
 
@@ -8,9 +11,10 @@ blueprint:
 
     * Allows changing which button controls local load, or disabling local load
 
+    * Allows setting LED indicator status based on a specific entity
+
     * Disables paddle programming mode (parameter 22, only on firmware 10.0+)
 
-  domain: automation
 
   input:
     device_id:
