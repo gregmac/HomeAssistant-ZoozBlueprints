@@ -15,7 +15,7 @@ blueprint:
     Supports up to 9 lights (all light inputs are optional). 
 
 
-    * Press button once to activate the scene. If the scene is already active, it is turned off.
+    * Press button once to activate the scene. If the scene is already active, it is turned off
 
     * Press button twice to turn on all lights to 100%
 

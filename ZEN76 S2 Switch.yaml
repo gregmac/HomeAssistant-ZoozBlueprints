@@ -8,9 +8,13 @@ blueprint:
 
     Other features:
 
-    * Enables scene control (parameter 10)
+    * Local physical control can be enable/disabled
 
-    * Disables paddle programming mode (parameter 17, only on firmware 10.0+).
+    * Configures important device settings:
+
+      * Enables scene control (parameter 10)
+
+      * Disables paddle programming mode (parameter 17, only on firmware 10.0+).
 
   input:
     device_id:
