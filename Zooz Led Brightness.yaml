@@ -100,6 +100,12 @@ action:
       is_night: "{{ now < sunrise or now >= sunset }}"
       brightness: "{{ night_brightness if is_night else day_brightness }}"
 
+  - service: logbook.log
+    data:
+      name: "{{ this.attributes.friendly_name }}"
+      message: "Setting Zooz LED brightness to {{ 'Low (30%)' if brightness == 2 else 'Medium (60%)' if brightness == 1 else 'Bright (100%)' }}"
+      entity_id: "{{ this.entity_id }}"
+
   - parallel:
       - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 11, value: "{{ brightness }}" } }
       - { service: zwave_js.set_config_parameter, target: { device_id: !input devices_zen32 }, data: { parameter: 12, value: "{{ brightness }}" } }
