@@ -176,6 +176,7 @@ blueprint:
 
 mode: parallel
 max_exceeded: silent
+trace: { stored_traces: 20 }
 
 variables:
   # constants from https://www.support.getzooz.com/kb/article/608-zen32-scene-controller-advanced-settings/
