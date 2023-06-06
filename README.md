@@ -7,23 +7,27 @@ it's possible to easily set actions for all input actions (press 1x, 2x, 3x, 4x 
 Important configuration settings are automatically set on the devices to prepare them for use,
 and some settings -- such as LED color and local physical control -- are easily configurable.
 
+The automations automatically set configuration settings:
+
+* Enabling scene control
+* Disabling paddle programming mode (firmware-dependent)
+* Disables LED flashing on parameter changes (firmware-dependent)
+
 ## Supported Devices and Automations
 
 ### Dimmers/Switches (ZEN76 and ZEN77)
 
-* Key press events (1x, 2x, 3x, 4x and 5x), hold and release events for both on/bright and off/dim
+* Key press events (1x, 2x, 3x, 4x, 5x, hold and release) for both on/bright and off/dim
 * Supports: 
   * [ZEN76 S2 On/Off Switch](https://www.getzooz.com/zooz-zen76-s2-700-series-switch/)
   * [ZEN77 S2 Dimmer](https://www.getzooz.com/zooz-zen77-s2-dimmer/)
 
 ### Scene Controller (ZEN32)
 
-Full control of [ZEN32](https://www.getzooz.com/zooz-zen32-scene-controller/)
-
-#### ZEN32 Basic events
+Full control of [ZEN32 scene controller](https://www.getzooz.com/zooz-zen32-scene-controller/)
 
 * Key press events (1x, 2x, 3x, 4x and 5x, hold and release) for all 5 buttons
-* Configure built-in relay: Disable local control or re-assign to one of the samller scene buttons
+* Configure built-in relay: Disable local control or re-assign to one of the smaller scene buttons
 * Status indicators: Set status for each LED based on any other entity
 
 #### ZEN32 Cover Control
@@ -46,4 +50,7 @@ Set up to 9 lights each to a specific brightness, assigned to a specific scene c
 ### Relays (ZEN51 and ZEN52)
 
 * Key press events (1x, 2x, 3x, 4x and 5x, hold and release) for input(s)
-
+* Configure built-in relay: Disable local control or re-assign to one of the smaller scene buttons
+* Supports:
+  * [ZEN51 Dry Contact Relay](https://www.getzooz.com/zooz-zen51-dry-contact-relay/)
+  * [ZEN52 Double Relay](https://www.getzooz.com/zooz-zen52-double-relay/)

@@ -65,7 +65,7 @@ blueprint:
       # state event, so we can't look this up dynamically, ie:
       #    {{ device_entities(device_id) | select('match','^switch\\.') | first }}
       description: >
-        The switch entity that is part of this switch. Required if Local Physical Control
+        The switch entity for this device. Required if Local Physical Control
         is set to one of the scene buttons.
       default: []
       selector:
