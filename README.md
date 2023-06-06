@@ -15,6 +15,17 @@ The automations automatically set configuration settings:
 
 ## Supported Devices and Automations
 
+||[ZEN32<br>Scene](https://www.getzooz.com/zooz-zen32-scene-controller/)|[ZEN76<br>On/Off Switch](https://www.getzooz.com/zooz-zen76-s2-700-series-switch/)|[ZEN77<br>Dimmer](https://www.getzooz.com/zooz-zen77-s2-dimmer/)|[ZEN51<br>Relay](https://www.getzooz.com/zooz-zen51-dry-contact-relay/)|[ZEN52<br>Double Relay](https://www.getzooz.com/zooz-zen52-double-relay/)|
+|-|:-:|:-:|:-:|:-:|:-:|
+|Individual key press events (1x, 2x, 3x, 4x, 5x, hold and release)|✔|✔|✔|✔|✔|
+|Disable local control|✔|✔|✔|✔|✔|
+|Reassign local control button|✔|-|-|-|-|
+|Set indicator colors|✔|✖|✖|-|-|
+|Update indicator state|✔|✖|✖|-|-|
+|Enable scene control|✔|✔|✔|✔|✔|
+|Disable local programming|✔|✔|✔|-|-|
+
+
 ### Dimmers/Switches (ZEN76 and ZEN77)
 
 * Key press events (1x, 2x, 3x, 4x, 5x, hold and release) for both on/bright and off/dim
