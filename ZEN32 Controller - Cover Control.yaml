@@ -143,16 +143,11 @@ trigger:
       device_id: !input device_id
 
   # cover state changed
-  - platform: state
-    entity_id: !input cover1
-  - platform: state
-    entity_id: !input cover2
-  - platform: state
-    entity_id: !input cover3
-  - platform: state
-    entity_id: !input cover4
-  - platform: state
-    entity_id: !input cover5
+  - { platform: state, entity_id: !input cover1, to: null }
+  - { platform: state, entity_id: !input cover2, to: null }
+  - { platform: state, entity_id: !input cover3, to: null }
+  - { platform: state, entity_id: !input cover4, to: null }
+  - { platform: state, entity_id: !input cover5, to: null }
 
   # used for initialization
   - platform: event

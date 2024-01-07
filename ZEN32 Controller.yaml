@@ -214,13 +214,14 @@ trigger:
   # switch entity, used for status
   - platform: state
     entity_id: !input local_switch
+    to:  # null, ignoring attribute changes
 
   # status entites, used for LED indicators
-  - { platform: state, entity_id: !input led_1 }
-  - { platform: state, entity_id: !input led_2 }
-  - { platform: state, entity_id: !input led_3 }
-  - { platform: state, entity_id: !input led_4 }
-  - { platform: state, entity_id: !input led_5 }
+  - { platform: state, entity_id: !input led_1, to: null }
+  - { platform: state, entity_id: !input led_2, to: null }
+  - { platform: state, entity_id: !input led_3, to: null }
+  - { platform: state, entity_id: !input led_4, to: null }
+  - { platform: state, entity_id: !input led_5, to: null }
 
 action:
   - variables:
