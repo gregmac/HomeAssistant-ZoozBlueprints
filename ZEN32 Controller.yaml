@@ -280,8 +280,9 @@ action:
           {{
             local_control_via_zwave
             and (
-              (trigger.event and trigger.event.event_type == 'automation_reloaded')
-              or trigger.entity_id == local_switch
+              (('event' in trigger) and trigger.event.event_type == 'automation_reloaded')
+              or 
+              (('entity_id' in trigger) and trigger.entity_id == local_switch)
             )
           }}
     then:
@@ -295,12 +296,15 @@ action:
       - condition: template
         value_template: |
           {{
-            (trigger.event and trigger.event.event_type == 'automation_reloaded')
-            or trigger.entity_id == led_1
-            or trigger.entity_id == led_2
-            or trigger.entity_id == led_3
-            or trigger.entity_id == led_4
-            or trigger.entity_id == led_5
+            (('event' in trigger) and trigger.event.event_type == 'automation_reloaded')
+            or
+            (('entity_id' in trigger) and (
+              trigger.entity_id == led_1
+              or trigger.entity_id == led_2
+              or trigger.entity_id == led_3
+              or trigger.entity_id == led_4
+              or trigger.entity_id == led_5
+            ))
           }}
     then:
       - parallel:
@@ -340,6 +344,7 @@ action:
         value_template: |
           {{
             local_control_via_zwave
+            and ('event' in trigger)
             and trigger.event.data.value == 'KeyPressed'
             and trigger.event.data.label == local_control
           }}
@@ -353,7 +358,7 @@ action:
         target: { entity_id: !input local_switch }
 
   - choose:
-      - conditions: "{{ trigger.event.data.label == 'Scene 005' }}"
+      - conditions: "{{ ('event' in trigger) and trigger.event.data.label == 'Scene 005' }}"
         sequence: 
           - choose:
               - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_5_1x }
@@ -364,7 +369,7 @@ action:
               - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_5_hold }
               - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_5_release }
 
-      - conditions: "{{ trigger.event.data.label == 'Scene 001' }}"
+      - conditions: "{{ ('event' in trigger) and trigger.event.data.label == 'Scene 001' }}"
         sequence:
           - choose:
               - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_1_1x }
@@ -375,7 +380,7 @@ action:
               - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_1_hold }
               - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_1_release }
 
-      - conditions: "{{ trigger.event.data.label == 'Scene 002' }}"
+      - conditions: "{{ ('event' in trigger) and trigger.event.data.label == 'Scene 002' }}"
         sequence: 
           - choose:
               - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_2_1x }
@@ -386,7 +391,7 @@ action:
               - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_2_hold }
               - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_2_release }
 
-      - conditions: "{{ trigger.event.data.label == 'Scene 003' }}"
+      - conditions: "{{ ('event' in trigger) and trigger.event.data.label == 'Scene 003' }}"
         sequence: 
           - choose:
               - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_3_1x }
@@ -397,7 +402,7 @@ action:
               - { conditions: "{{ trigger.event.data.value == 'KeyHeldDown' }}",   sequence: !input button_3_hold }
               - { conditions: "{{ trigger.event.data.value == 'KeyReleased' }}",   sequence: !input button_3_release }
 
-      - conditions: "{{ trigger.event.data.label == 'Scene 004' }}"
+      - conditions: "{{ ('event' in trigger) and trigger.event.data.label == 'Scene 004' }}"
         sequence: 
           - choose:
               - { conditions: "{{ trigger.event.data.value == 'KeyPressed' }}",    sequence: !input button_4_1x }

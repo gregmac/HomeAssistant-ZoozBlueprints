@@ -198,14 +198,16 @@ action:
   - choose:
       - alias: Initializing, or Light state changed
         conditions: >-
-          {{
-            (trigger.event and trigger.event.event_type == 'automation_reloaded')
-
-            or trigger.entity_id == cover1
-            or trigger.entity_id == cover2
-            or trigger.entity_id == cover3
-            or trigger.entity_id == cover4
-            or trigger.entity_id == cover5
+          {{ 
+            (('event' in trigger) and trigger.event.event_type == 'automation_reloaded')
+            or
+            (('entity_id' in trigger) and (
+              trigger.entity_id == cover1
+              or trigger.entity_id == cover2
+              or trigger.entity_id == cover3
+              or trigger.entity_id == cover4
+              or trigger.entity_id == cover5
+            ))
           }}
         sequence:
           - choose:

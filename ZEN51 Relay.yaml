@@ -60,12 +60,12 @@ trigger:
 action:
   - variables:
       #button_id: '{{ trigger.event.data.property_key_name }}'
-      scene_id: "{{ trigger.event.data.label }}"
-      event_action: "{{ trigger.event.data.value }}"
+      scene_id: "{{ trigger.event.data.label if ('event' in trigger) }}"
+      event_action: "{{ trigger.event.data.value if ('event' in trigger)  }}"
   - choose:
       # initialize
       # docs: https://www.support.getzooz.com/kb/article/796-zen51-dry-contact-relay-advanced-settings/
-      - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+      - conditions: "{{ ('event' in trigger) and trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
           # enable scene control
           - alias: "zwavejs: Enable scene control"

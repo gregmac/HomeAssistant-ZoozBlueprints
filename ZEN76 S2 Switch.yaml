@@ -85,11 +85,11 @@ trigger:
 action:
   - variables:
       #button_id: '{{ trigger.event.data.property_key_name }}'
-      scene_id: "{{ trigger.event.data.label }}"
-      event_action: "{{ trigger.event.data.value }}"
+      scene_id: "{{ trigger.event.data.label if ('event' in trigger) }}"
+      event_action: "{{ trigger.event.data.value if ('event' in trigger) }}"
   - choose:
       # initialize
-      - conditions: "{{ trigger.event.event_type == 'automation_reloaded' }}"
+      - conditions: "{{ ('event' in trigger) and trigger.event.event_type == 'automation_reloaded' }}"
         sequence:
           - alias: "zwavejs: Enable scene control"
             service: zwave_js.set_config_parameter

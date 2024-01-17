@@ -324,17 +324,19 @@ action:
       - alias: Initializing, or Light state changed
         conditions: >-
           {{
-            (trigger.event and trigger.event.event_type == 'automation_reloaded')
-
-            or trigger.entity_id == light1
-            or trigger.entity_id == light2
-            or trigger.entity_id == light3
-            or trigger.entity_id == light4
-            or trigger.entity_id == light5
-            or trigger.entity_id == light6
-            or trigger.entity_id == light7
-            or trigger.entity_id == light8
-            or trigger.entity_id == light9
+            (('event' in trigger) and trigger.event.event_type == 'automation_reloaded')
+            or
+            (('entity_id' in trigger) and (
+              trigger.entity_id == light1
+              or trigger.entity_id == light2
+              or trigger.entity_id == light3
+              or trigger.entity_id == light4
+              or trigger.entity_id == light5
+              or trigger.entity_id == light6
+              or trigger.entity_id == light7
+              or trigger.entity_id == light8
+              or trigger.entity_id == light9
+            ))
           }}
         sequence:
           - choose:
