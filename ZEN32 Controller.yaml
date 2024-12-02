@@ -23,9 +23,13 @@ blueprint:
         The device to add automation triggers to.
       selector:
         device:
-          integration: zwave_js
-          manufacturer: Zooz
-          model: ZEN32
+          entity:
+            - integration: zwave_js
+          filter:
+            - manufacturer: Zooz
+              model: ZEN32
+            - manufacturer: Zooz
+              model: ZEN32 800LR
           multiple: false
 
     local_control:
