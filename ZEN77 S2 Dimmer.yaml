@@ -25,9 +25,13 @@ blueprint:
         Note that the "Scene Control" parameter will be enabled on this device (triggered by it coming online).
       selector:
         device:
-          integration: zwave_js
-          manufacturer: Zooz
-          model: ZEN77
+          entity:
+            - integration: zwave_js
+          filter:
+            - manufacturer: Zooz
+              model: ZEN72
+            - manufacturer: Zooz
+              model: ZEN77
           multiple: false
 
     local_control:
